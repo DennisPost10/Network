@@ -110,26 +110,31 @@ class nw2:
 		
 			summary_writer = tf.summary.FileWriter(self.output_directory + '/summary2', self.g2)
 			batch_count = 0
+			better = False
 			for step in range(self.start_index, self.start_index + self.steps):
-				if step % 1000 == 0:
+				if step % 100 == 0:
 					summarystr, loss_val, accuracy_eval, h_acc, c_acc, e_acc = self.sess2.run([summary, self.loss2, self.accuracy2, self.h_accuracy2, self.c_accuracy2, self.e_accuracy2], feed_dict={self.x2: self.prot_it.test_set, self.y2: self.prot_it.test_set_o, self.keep_prob2: 1})
-					if step % 5000 == 0:
-						if(accuracy_eval > self.winner_acc or loss_val < self.winner_loss):
-							self.winner_acc = accuracy_eval
-							self.winner_loss = loss_val
-							self.saver2.save(self.sess2, (self.output_directory + '/save2/' + self.name), global_step=self.global_step2)
+					if(accuracy_eval > self.winner_acc + 0.0001 or loss_val < self.winner_loss - 0.0001):
+						self.winner_acc = accuracy_eval
+						self.winner_loss = loss_val
+						better = True
+						self.saver2.save(self.sess2, (self.output_directory + '/save2/' + self.name), global_step=self.global_step2)
+					if step % 1000 == 0:
+						print('Step %d: eval_accuracy = %.3f loss = %.3f H: %.3f C: %.3f E: %.3f (%d)' % (step, accuracy_eval, loss_val, h_acc, c_acc, e_acc, batch_count))						
+						summary_writer.add_summary(summarystr, step)
+					if step % 10000 == 0:
+						if better:
+							better = False
 						else:
-							print("finished training early")
+							print("finished early")
 							return
-					print('Step %d: eval_accuracy = %.3f loss = %.3f H: %.2f C: %.2f E: %.2f (%d)' % (step, accuracy_eval, loss_val, h_acc, c_acc, e_acc, batch_count))
-					summary_writer.add_summary(summarystr, step)
 				self.prot_it.next_batch(self.batch_size)
 				_ = self.sess2.run(self.train_step2, feed_dict={self.x2: self.prot_it.next_batch_w, self.y2: self.prot_it.next_batch_o, self.keep_prob2: self.keep_prob_val})
 				batch_count += 1
 		
 			self.saver2.save(self.sess2, (self.output_directory + '/save2/' + self.name), global_step=self.global_step2)
 			summarystr, loss_val, accuracy_eval, h_acc, c_acc, e_acc = self.sess2.run([summary, self.loss2, self.accuracy2, self.h_accuracy2, self.c_accuracy2, self.e_accuracy2], feed_dict={self.x2: self.prot_it.test_set, self.y2: self.prot_it.test_set_o, self.keep_prob2: 1})
-			print('Step %d: eval_accuracy = %.3f loss = %.3f H: %.2f C: %.2f E: %.2f (%d)' % (self.start_index + self.steps, accuracy_eval, loss_val, h_acc, c_acc, e_acc, batch_count))
+			print('Step %d: eval_accuracy = %.3f loss = %.3f H: %.3f C: %.3f E: %.3f (%d)' % (self.start_index + self.steps, accuracy_eval, loss_val, h_acc, c_acc, e_acc, batch_count))
 			summary_writer.add_summary(summarystr, self.start_index + self.steps)
 
 			print("training finished at maximum steps")

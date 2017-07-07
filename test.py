@@ -9,14 +9,14 @@ from network_d import nw2
 
 def run():
     net1 = nw1("D:/Dennis/Uni/bachelor/double_network/config2.txt")
-    net1.train("D:/Dennis/Uni/bachelor/tdbdata/train1.lst")
+    net1.train("D:/Dennis/Uni/bachelor/tdbdata/train2.lst")
     net1.restore_graph_without_knowing_checkpoint()
-    net1.predict("D:/Dennis/Uni/bachelor/tdbdata/train1.lst")
-    net1.predict("D:/Dennis/Uni/bachelor/tdbdata/test1.lst")
+    net1.predict("D:/Dennis/Uni/bachelor/tdbdata/train2.lst")
+    net1.predict("D:/Dennis/Uni/bachelor/tdbdata/test2.lst")
     net2 = nw2("D:/Dennis/Uni/bachelor/double_network/config2.txt")
-    net2.train("D:/Dennis/Uni/bachelor/tdbdata/train1.lst")
+    net2.train("D:/Dennis/Uni/bachelor/tdbdata/train2.lst")
     net2.restore_graph_without_knowing_checkpoint()
-    net2.predict("D:/Dennis/Uni/bachelor/tdbdata/test1.lst", net1)
+    net2.predict("D:/Dennis/Uni/bachelor/tdbdata/test2.lst", None)
 
 if __name__ == '__main__':
     run()

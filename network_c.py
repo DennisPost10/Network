@@ -9,7 +9,7 @@ from ProtFileParser1 import ProtFileParser
 import tensorflow as tf
 
 sss = ['H', 'C', 'E']
-	
+
 class nw1:
 
 	def one_hot(self, index):
@@ -111,26 +111,32 @@ class nw1:
 			summary_writer = tf.summary.FileWriter(self.output_directory + '/summary', self.g)
 		
 			batch_count = 0
+			better = False
 			for step in range(self.start_index, self.start_index + self.steps):
-				if step % 1000 == 0:
+				if step % 100 == 0:
 					summarystr, loss_val, accuracy_eval, h_acc, c_acc, e_acc = self.sess.run([summary, self.loss, self.accuracy, self.h_accuracy, self.c_accuracy, self.e_accuracy], feed_dict={self.x: self.prot_it.test_set, self.y: self.prot_it.test_set_o, self.keep_prob: 1})
-					if step % 5000 == 0:
-						if(accuracy_eval > self.winner_acc or loss_val < self.winner_loss):
-							self.winner_acc = accuracy_eval
-							self.winner_loss = loss_val
-							self.saver.save(self.sess, (self.output_directory + '/save/' + self.name), global_step=self.global_step)
+					if(accuracy_eval > self.winner_acc or loss_val < self.winner_loss):
+						self.winner_acc = accuracy_eval
+						self.winner_loss = loss_val
+						better = True
+						self.saver.save(self.sess, (self.output_directory + '/save/' + self.name), global_step=self.global_step)
+					if step % 1000 == 0:
+						print('Step %d: eval_accuracy = %.3f loss = %.3f H: %.3f C: %.3f E: %.3f (%d)' % (step, accuracy_eval, loss_val, h_acc, c_acc, e_acc, batch_count))
+						summary_writer.add_summary(summarystr, step)			
+					if step % 10000 == 0:
+						if better:
+							better = False
 						else:
+							print("finished early")
 							return
-					print('Step %d: eval_accuracy = %.3f loss = %.3f H: %.2f C: %.2f E: %.2f (%d)' % (step, accuracy_eval, loss_val, h_acc, c_acc, e_acc, batch_count))
-					summary_writer.add_summary(summarystr, step)			
-			
+				
 				self.prot_it.next_batch(self.batch_size)
 				_ = self.sess.run(self.train_step, feed_dict={self.x: self.prot_it.next_batch_w, self.y: self.prot_it.next_batch_o, self.keep_prob: self.keep_prob_val})
 				batch_count += 1
 		
 			self.saver.save(self.sess, (self.output_directory + '/save/' + self.name), global_step=self.global_step)
 			summarystr, loss_val, accuracy_eval, h_acc, c_acc, e_acc = self.sess.run([summary, self.loss, self.accuracy, self.h_accuracy, self.c_accuracy, self.e_accuracy], feed_dict={self.x: self.prot_it.test_set, self.y: self.prot_it.test_set_o, self.keep_prob: 1})
-			print('Step %d: eval_accuracy = %.3f loss = %.3f H: %.2f C: %.2f E: %.2f (%d)' % (self.start_index + self.steps, accuracy_eval, loss_val, h_acc, c_acc, e_acc, batch_count))
+			print('Step %d: eval_accuracy = %.3f loss = %.3f H: %.3f C: %.3f E: %.3f (%d)' % (self.start_index + self.steps, accuracy_eval, loss_val, h_acc, c_acc, e_acc, batch_count))
 			summary_writer.add_summary(summarystr, self.start_index + self.steps)
 
 			print("training finished")
@@ -201,10 +207,13 @@ class nw1:
 #		self.meta_graph = configs["meta_graph"]
 #		self.train = configs["train"]
 #		self.predict = configs["predict"]
-			
+		
 		self.output_directory = self.output_directory + "/" + self.name + "/"
 		if not os.path.exists(self.output_directory):
 			os.makedirs(self.output_directory)
+		else:
+			print("Error! Network already exists! Sure you want to override?!?")
+			sys.exit(1)
 		if not os.path.exists(self.output_directory + "save"):
 			os.makedirs(self.output_directory + "save")
 		if not os.path.exists(self.output_directory + "summary"):
