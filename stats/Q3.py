@@ -18,11 +18,11 @@ def read_structures(secondary_structure_observed, secondary_structure_predicted)
 
 def analyze(prot_name_file, prot_directory, observed_in_subdir, predicted_dir, predicted_in_subdir, output_matrix_file, overwrite_matrix):
     
-    if os.path.exists(output_matrix_file) and not overwrite_matrix:
+    if os.path.exists(output_matrix_file) and not overwrite_matrix == 1:
         print("WARNING: overwriting older output_matrix")
         print("Execution interrupted")
         sys.exit()
-    
+        
     with open(prot_name_file) as f:
         prots = f.read().split("\n")
     print(prots)
@@ -32,12 +32,12 @@ def analyze(prot_name_file, prot_directory, observed_in_subdir, predicted_dir, p
     
     for prot in prots:
         observed_ss_file = prot_directory + "/" + prot
-        if observed_in_subdir:
+        if observed_in_subdir == 1:
             observed_ss_file += "/" + prot
-        observed_ss_file += ".secondary_structure"
+        observed_ss_file += ".ss_q3"
         
         predicted_ss_file = predicted_dir + "/" + prot
-        if predicted_in_subdir:
+        if predicted_in_subdir == 1:
             predicted_ss_file += "/" + prot
         predicted_ss_file += ".secondary_structure"
         
