@@ -1,6 +1,7 @@
 from collections import Counter
-import sys
 import os.path
+import sys
+from numpy import average
 
 def read_structures(secondary_structure_observed, secondary_structure_predicted):
     ss_obs = open(secondary_structure_observed).read().strip()
@@ -68,10 +69,62 @@ def q3(ss_obs, ss_pred, length):
 
     return correct, correct_counts, counts_observed, counts_predicted, mean, h_score, c_score, e_score, avg
 
-def sov(ss_obs, ss_pred, length):
-    counts_observed = Counter(ss_obs)
-    counts_predicted = Counter(ss_pred)
-   
+def sov(obs, pred, length):
+    sov_arr = {'H': [], 'C': [], 'E': []}
+    print(obs)
+    print(pred)
+    i = 0
+    weighted_sov_sum = 0.0
+    while i < length:
+        if obs[i] == pred[i]:
+            j_o = i
+            i_o = i
+            j_p = i
+            i_p = i
+            while i_o > 0 and obs[i_o - 1] == obs[i]:
+                i_o -= 1
+            while j_o < length - 1 and obs[j_o + 1] == obs[i]:
+                j_o += 1
+            while i_p > 0 and pred[i_p - 1] == pred[i]:
+                i_p -= 1
+            while j_p < length - 1 and pred[j_p + 1] == pred[i]:
+                j_p += 1
+            j_o += 1
+            j_p +=1
+                
+            low = max(i_o, i_p)
+            high = min(j_o, j_p)
+            overlap = high - low
+            sov = sov_val(j_o - i_o, j_p - i_p, overlap)
+            print(sov)
+            weighted_sov_sum += sov * (j_o - i_o)
+            sov_arr[obs[i]].append(sov)
+#           print(str(i_o) + " "  + str(j_o) + " " + str(i_p) + " " + str(j_p) + " " + str(overlap)) 
+            i = min(j_o, j_p)
+        else:
+            i += 1
+    print(sov_arr)
+    h_sov = average(sov_arr['H'])
+    c_sov = average(sov_arr['C'])
+    e_sov = average(sov_arr['E'])
+    print(h_sov)
+    print(c_sov)
+    print(e_sov)
+    sov3 = weighted_sov_sum / length * 100
+    print(sov3)
+    return h_sov, c_sov, e_sov, sov3
+    
+def sov_val(size_obs, size_pred, overlap):
+    ret = overlap + sov_delta(size_obs, size_pred, overlap)
+    maxOV = (size_obs + size_pred - overlap) * 1.0
+    return ret/maxOV
+    
+def sov_delta(size_obs, size_pred, overlap):
+    ret = min((size_obs + size_pred - overlap), overlap)
+    ret = min(ret, overlap)
+    ret = min(ret, int(0.5 * size_obs))
+    return min(ret, int(0.5 * size_pred))
+      
 def main():
     args = sys.argv[1:]
     print(args)
