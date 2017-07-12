@@ -3,7 +3,7 @@
 import tensorflow as tf
 import numpy as np
 import sys
-from runner2 import ProtFileParser2
+from ProtFileParser2 import ProtFileParser2
 import getopt
 import os
 

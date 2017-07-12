@@ -8,15 +8,25 @@ from network_d import nw2
 
 
 def run():
-    net1 = nw1("D:/Dennis/Uni/bachelor/double_network/config2.txt")
-    net1.train("D:/Dennis/Uni/bachelor/tdbdata/train2.lst")
+#    net1 = nw1("D:/Dennis/Uni/bachelor/double_network/config2.txt")
+#    net1.train("D:/Dennis/Uni/bachelor/tdbdata/train2.lst")
+#    net1.restore_graph_without_knowing_checkpoint()
+#    net1.predict("D:/Dennis/Uni/bachelor/tdbdata/train2.lst")
+#    net1.predict("D:/Dennis/Uni/bachelor/tdbdata/test2.lst")
+#    net2 = nw2("D:/Dennis/Uni/bachelor/double_network/config2.txt")
+#    net2.train("D:/Dennis/Uni/bachelor/tdbdata/train2.lst")
+#    net2.restore_graph_without_knowing_checkpoint()
+#    net2.predict("D:/Dennis/Uni/bachelor/tdbdata/test2.lst", None)
+
+    net1 = nw1("/home/p/postd/bachelor/config2.txt")
+    net1.train("/home/p/postd/bachelor/data/tdbdata/train1.lst")
     net1.restore_graph_without_knowing_checkpoint()
-    net1.predict("D:/Dennis/Uni/bachelor/tdbdata/train2.lst")
-    net1.predict("D:/Dennis/Uni/bachelor/tdbdata/test2.lst")
-    net2 = nw2("D:/Dennis/Uni/bachelor/double_network/config2.txt")
-    net2.train("D:/Dennis/Uni/bachelor/tdbdata/train2.lst")
+    net1.predict("/home/p/postd/bachelor/data/tdbdata/train1.lst")
+    net1.predict("/home/p/postd/bachelor/data/tdbdata/test1.lst")
+    net2 = nw2("/home/p/postd/bachelor/config2.txt")
+    net2.train("/home/p/postd/bachelor/data/tdbdata/train1.lst")
     net2.restore_graph_without_knowing_checkpoint()
-    net2.predict("D:/Dennis/Uni/bachelor/tdbdata/test2.lst", None)
+    net2.predict("/home/p/postd/bachelor/data/tdbdata/test1.lst", None)
 
 if __name__ == '__main__':
     run()

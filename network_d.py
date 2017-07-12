@@ -2,7 +2,7 @@ import os
 import sys
 import tempfile
 
-from ConfigFileParser import Configurations
+from utils.ConfigFileParser import Configurations
 from ProtFileParser2 import ProtFileParser2
 import matplotlib.pyplot as plt
 from network_c import nw1

@@ -107,6 +107,7 @@ def q3(ss_obs, ss_pred, length):
 
 def sov(obs, pred, length):
     sov_arr = {'H': [], 'C': [], 'E': []}
+    counts_observed = Counter(obs)
     print(obs)
     print(pred)
     i = 0
@@ -133,24 +134,24 @@ def sov(obs, pred, length):
             overlap = high - low
             sov = sov_val(j_o - i_o, j_p - i_p, overlap)
             weighted_sov_sum += sov * (j_o - i_o)
-            sov_arr[obs[i]].append(sov)
+            sov_arr[obs[i]].append(sov * (j_o - i_o))
 #           print(str(i_o) + " "  + str(j_o) + " " + str(i_p) + " " + str(j_p) + " " + str(overlap)) 
             i = min(j_o, j_p)
         else:
             i += 1
     print(sov_arr)
     if len(sov_arr['H']) > 0:
-        h_sov = average(sov_arr['H']) * 100
+        h_sov = sum(sov_arr['H']) / counts_observed['H'] * 100
     else:
         h_sov = -1
         
     if len(sov_arr['C']) > 0:
-        c_sov = average(sov_arr['C']) * 100
+        c_sov = sum(sov_arr['C']) / counts_observed['C'] * 100
     else:
         c_sov = -1
         
     if len(sov_arr['C']) > 0:
-        e_sov = average(sov_arr['E']) * 100
+        e_sov = sum(sov_arr['E']) / counts_observed['E'] * 100
     else:
         e_sov = -1
 #    print(h_sov)

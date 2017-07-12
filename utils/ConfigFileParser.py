@@ -23,6 +23,14 @@ class Configurations:
                         self.configs[key] = (val == "true" or val == "TRUE" or val == "True" or val == "T")
                     elif typ == "none":
                         self.configs[key] = None
+                    elif typ == "int_array":
+                        arr = val.split(",")
+                        arr = list(map(int, arr))
+                        self.configs[key] = arr
+                    elif typ == "float_array":
+                        arr = val.split(",")
+                        arr = list(map(float, arr))
+                        self.configs[key] = arr
                     else:
                         self.configs[key] = val
         print(self.configs)

@@ -1,7 +1,7 @@
 import os
 import sys
 
-from ConfigFileParser import Configurations
+from utils.ConfigFileParser import Configurations
 import matplotlib.pyplot as plt
 import numpy as np
 from parser1 import InputParser
@@ -57,7 +57,6 @@ class nw1:
 			self.correct_prediction = tf.equal(tf.argmax(self.y_p, 1), tf.argmax(self.y, 1), name="correct_prediction")
 			self.accuracy = tf.reduce_mean(tf.cast(self.correct_prediction, tf.float32), name="accuracy")
 			self.observed = tf.argmax(self.y, 1)
-		
 			self.h_count = tf.count_nonzero(tf.equal(tf.argmax(self.y, 1), 0), name = "h_count", dtype = tf.int32)
 			self.c_count = tf.count_nonzero(tf.equal(tf.argmax(self.y, 1), 1), name = "c_count", dtype = tf.int32)
 			self.e_count = tf.count_nonzero(tf.equal(tf.argmax(self.y, 1), 2), name = "e_count", dtype = tf.int32)
