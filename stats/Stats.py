@@ -2,6 +2,8 @@ from collections import Counter
 import os.path
 import sys
 from numpy import average
+import subprocess
+import matplotlib
 
 def read_structures(prot_directory, prot, observed_in_subdir, predicted_dir, predicted_in_subdir):
     
@@ -44,7 +46,6 @@ def read_structures(prot_directory, prot, observed_in_subdir, predicted_dir, pre
     return ss_obs, ss_pred, l
 
 def analyze(prot_name_file, prot_directory, observed_in_subdir, predicted_dir, predicted_in_subdir, output_matrix_file, overwrite_matrix):
-    
     if os.path.exists(output_matrix_file) and not overwrite_matrix == 1:
         print("WARNING: overwriting older output_matrix")
         print("Execution interrupted")
@@ -65,7 +66,7 @@ def analyze(prot_name_file, prot_directory, observed_in_subdir, predicted_dir, p
         
         h_sov, c_sov, e_sov, sov3 = sov(ss_obs, ss_pred, length)
         
-        output_matrix.write(prot + "\t" + str(length) + "\t" + str(counts_observed['H']) + "\t" + str(counts_observed['C']) + "\t" + str(counts_observed['E']) + "\t" + str(counts_predicted['H']) + "\t" + str(counts_predicted['C']) + "\t" + str(counts_predicted['E']) + "\t" + str(correct) + "\t" + str(correct_counts['H']) + "\t" + str(correct_counts['C']) + "\t" + str(correct_counts['E']) + "\t" + str(mean) + "\t" + str(h_score) + "\t" + str(c_score) + "\t" + str(e_score) + "\t" + str(avg) + "\t" + str(h_sov) + "\t" + str(c_sov) + "\t" + str(e_sov) + "\t" + sov3 +"\n")
+        output_matrix.write(prot + "\t" + str(length) + "\t" + str(counts_observed['H']) + "\t" + str(counts_observed['C']) + "\t" + str(counts_observed['E']) + "\t" + str(counts_predicted['H']) + "\t" + str(counts_predicted['C']) + "\t" + str(counts_predicted['E']) + "\t" + str(correct) + "\t" + str(correct_counts['H']) + "\t" + str(correct_counts['C']) + "\t" + str(correct_counts['E']) + "\t" + str(mean) + "\t" + str(h_score) + "\t" + str(c_score) + "\t" + str(e_score) + "\t" + str(avg) + "\t" + str(h_sov) + "\t" + str(c_sov) + "\t" + str(e_sov) + "\t" + str(sov3) +"\n")
         
     output_matrix.close()
 
@@ -80,11 +81,27 @@ def q3(ss_obs, ss_pred, length):
             correct += 1
             correct_counts[ss_obs[i]] += 1
     
-    mean = correct / length
-    h_score = correct_counts['H'] / counts_observed['H']
-    c_score = correct_counts['C'] / counts_observed['C']
-    e_score = correct_counts['E'] / counts_observed['E']
-    avg = (h_score + c_score + e_score)/3
+    mean = correct / length * 100
+    i = 0
+    if counts_observed['H'] > 0:
+        h_score = correct_counts['H'] / counts_observed['H'] * 100
+        i += 1
+    else:
+        h_score = -1
+    
+    if counts_observed['C'] > 0:
+        c_score = correct_counts['C'] / counts_observed['C'] * 100
+        i += 1
+    else:
+        c_score = -1
+        
+    if counts_observed['E'] > 0:
+        e_score = correct_counts['E'] / counts_observed['E'] * 100
+        i += 1
+    else:
+        e_score = -1
+        
+    avg = (h_score + c_score + e_score)/i
 
     return correct, correct_counts, counts_observed, counts_predicted, mean, h_score, c_score, e_score, avg
 
@@ -115,7 +132,6 @@ def sov(obs, pred, length):
             high = min(j_o, j_p)
             overlap = high - low
             sov = sov_val(j_o - i_o, j_p - i_p, overlap)
-            print(sov)
             weighted_sov_sum += sov * (j_o - i_o)
             sov_arr[obs[i]].append(sov)
 #           print(str(i_o) + " "  + str(j_o) + " " + str(i_p) + " " + str(j_p) + " " + str(overlap)) 
@@ -123,23 +139,34 @@ def sov(obs, pred, length):
         else:
             i += 1
     print(sov_arr)
-    h_sov = average(sov_arr['H'])
-    c_sov = average(sov_arr['C'])
-    e_sov = average(sov_arr['E'])
-    print(h_sov)
-    print(c_sov)
-    print(e_sov)
+    if len(sov_arr['H']) > 0:
+        h_sov = average(sov_arr['H']) * 100
+    else:
+        h_sov = -1
+        
+    if len(sov_arr['C']) > 0:
+        c_sov = average(sov_arr['C']) * 100
+    else:
+        c_sov = -1
+        
+    if len(sov_arr['C']) > 0:
+        e_sov = average(sov_arr['E']) * 100
+    else:
+        e_sov = -1
+#    print(h_sov)
+#    print(c_sov)
+#    print(e_sov)
     sov3 = weighted_sov_sum / length * 100
     print(sov3)
     return h_sov, c_sov, e_sov, sov3
     
 def sov_val(size_obs, size_pred, overlap):
-    ret = overlap + sov_delta(size_obs, size_pred, overlap)
     maxOV = (size_obs + size_pred - overlap) * 1.0
+    ret = overlap + sov_delta(size_obs, size_pred, overlap, maxOV)
     return ret/maxOV
     
-def sov_delta(size_obs, size_pred, overlap):
-    ret = min((size_obs + size_pred - overlap), overlap)
+def sov_delta(size_obs, size_pred, overlap, maxOV):
+    ret = min(maxOV - overlap, overlap)
     ret = min(ret, overlap)
     ret = min(ret, int(0.5 * size_obs))
     return min(ret, int(0.5 * size_pred))
@@ -150,7 +177,7 @@ def main():
     if len(args) < 7:
         print("Usage: prot_name_file, prot_directory, observed_in_subdir, predicted_dir, predicted_in_subdir, output_matrix_file, overwrite_matrix")
         sys.exit()
-    analyze(args[0], args[1], args[2], args[3], args[4], args[5], args[6])
+    analyze(args[0], args[1], int(args[2]), args[3], int(args[4]), args[5], int(args[6]))
     
 if __name__ == '__main__':
     main()
