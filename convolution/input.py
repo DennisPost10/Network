@@ -1,6 +1,5 @@
 import math
 import os
-import sys
 
 from sklearn.utils import shuffle
 
@@ -11,17 +10,21 @@ class CNN_Inputparser:
     
     def read_data(self, prot_name_file):
         base_name = os.path.splitext(prot_name_file)[0]  
-        if os.path.exists(base_name + ".cnn_train_windows") and os.path.exists(base_name + ".cnn_train_one_hots") and os.path.exists(base_name + ".cnn_test_windows") and os.path.exists(base_name + ".cnn_test_one_hots"):
+        if os.path.exists(base_name + ".cnn_train_windows.npy") and os.path.exists(base_name + ".cnn_train_one_hots.npy") and os.path.exists(base_name + ".cnn_test_windows.npy") and os.path.exists(base_name + ".cnn_test_one_hots.npy"):
             print("reading data...")
-            self.prot_matrices = np.load(base_name + ".cnn_train_windows")
+            self.prot_matrices = np.load(base_name + ".cnn_train_windows.npy")
             print("read train prots")
-            self.prot_outcomes = np.load(base_name + ".cnn_train_one_hots").astype(float)
+            self.prot_outcomes = np.load(base_name + ".cnn_train_one_hots.npy").astype(float)
             print("read train one_hots")
-            self.test_set = np.load(base_name + ".cnn_test_windows")
+            self.test_set = np.load(base_name + ".cnn_test_windows.npy")
             print("read test prots")
-            self.test_set_o = np.load(base_name + ".cnn_test_one_hots").astype(float)
+            self.test_set_o = np.load(base_name + ".cnn_test_one_hots.npy").astype(float)
             print("read test one_hots")
             print("...finished reading")
+            print(self.prot_matrices.shape)
+            print(self.prot_outcomes.shape)
+            print(self.test_set.shape)
+            print(self.test_set_o.shape)
         else:
             self.prots = []
             with open(prot_name_file) as file:
@@ -53,14 +56,17 @@ class CNN_Inputparser:
             # save 10% as test set: simply take every 10th row
             self.test_set = self.prot_matrices[::20]
             self.test_set_o = self.prot_outcomes[::20]
-            self.prot_matrices = np.delete(self.prot_matrices, list(range(0, len(self.prot_matrices), 10)), axis=0)
-            self.prot_outcomes = np.delete(self.prot_outcomes, list(range(0, len(self.prot_outcomes), 10)), axis=0)
+            print(self.prots[::20])
+            self.prot_matrices = np.delete(self.prot_matrices, list(range(0, len(self.prot_matrices), 20)), axis=0)
+            self.prot_outcomes = np.delete(self.prot_outcomes, list(range(0, len(self.prot_outcomes), 20)), axis=0)
             
             self.test_set = np.asarray(self.test_set)
             self.test_set_o = np.asarray(self.test_set_o)
             self.prot_matrices = np.asarray(self.prot_matrices)
             self.prot_outcomes = np.asarray(self.prot_outcomes)
-
+            print(self.test_set.shape)
+            print(self.test_set_o.shape)
+            
             np.save(base_name + ".cnn_train_windows", self.prot_matrices)
             np.save(base_name + ".cnn_train_one_hots", self.prot_outcomes.astype(int))
             np.save(base_name + ".cnn_test_windows", self.test_set)
@@ -73,12 +79,10 @@ class CNN_Inputparser:
         return self.test_set, self.test_set_o
     
     def next_prots(self, size):
-        ret_prots = []
-        ret_prots_o = []
         rows_left = len(self.prot_matrices) - self.index
         first_pull = min(rows_left, size)
-        ret_prots.append(self.prot_matrices[self.index:(self.index + first_pull)])
-        ret_prots_o.append(self.prot_outcomes[self.index:(self.index + first_pull)])
+        ret_prots = self.prot_matrices[self.index:(self.index + first_pull)]
+        ret_prots_o = self.prot_outcomes[self.index:(self.index + first_pull)]
         self.index += first_pull
 
         if(self.index > len(self.prot_matrices)):
@@ -89,10 +93,10 @@ class CNN_Inputparser:
             print("shuffled")
         if(first_pull < size):
             second_pull = size - first_pull
-            ret_prots.append(self.prot_matrices[self.index:(self.index + second_pull):1])
-            ret_prots_o.append(self.prot_outcomes[self.index:(self.index + second_pull):1])
+            ret_prots = np.vstack((ret_prots, self.prot_matrices[self.index:(self.index + second_pull):1]))
+            ret_prots_o = np.vstack((ret_prots_o, self.prot_outcomes[self.index:(self.index + second_pull):1]))
             self.index += second_pull
-                
+            
         return ret_prots, ret_prots_o
     
     def __init__(self, prot_name_file, prot_directory, max_prot_length):
