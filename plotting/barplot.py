@@ -37,4 +37,5 @@ class barplot:
 # df=pa.DataFrame([sum(d.num_h), sum(d.num_c), sum(d.num_e), sum(d.pred_h), sum(d.pred_c), sum(d.pred_e), sum(d.h_correct), sum(d.c_correct), sum(d.e_correct)])
 # df[1]=pa.Series(["h", "c", "e", "h", "c", "e", "h", "c", "e"], index=df.index)
 # df[2]=pa.Series(["observed", "observed", "observed", "predicted", "predicted", "predicted", "correct", "correct", "correct"], index=df.index)
+# df.columns=['occurences', 'secondary structure', 'type']
 # ax = sns.barplot(x=df[2], y=df[0], hue=df[1], data=df)
