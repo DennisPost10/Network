@@ -38,4 +38,4 @@ class barplot:
 # df[1]=pa.Series(["h", "c", "e", "h", "c", "e", "h", "c", "e"], index=df.index)
 # df[2]=pa.Series(["observed", "observed", "observed", "predicted", "predicted", "predicted", "correct", "correct", "correct"], index=df.index)
 # df.columns=['occurences', 'secondary structure', 'type']
-# ax = sns.barplot(x=df[2], y=df[0], hue=df[1], data=df)
+# ax = sns.barplot(x=df['type'], y=df['occurences'], hue=df['secondary structure'], data=df)
