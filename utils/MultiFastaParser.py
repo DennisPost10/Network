@@ -130,7 +130,7 @@ def read_filter_file(name_file):
     return incl
 
 def main(argv):
-    read_fasta("/home/p/postd/bachelor/data/cull_pdb/pdbaa.nr", read_filter_file("/home/p/postd/bachelor/data/cull_pdb/cullpdb_pc25_res1.8_R0.25_d170706_chains6421"))
+    read_fasta("/home/p/postd/bachelor/data/cull_pdb/pdbaa.nr", read_filter_file("/home/p/postd/bachelor/data/cull_pdb/cullpdb_pc25_res1.8_R0.25_d170706_chains6421"), "/home/p/postd/bachelor/data/cull_pdb/proteins/")
 #    read_fasta("D:/Dennis/Uni/bachelor/data/cull_pdb/pdbaa.nr", read_filter_file("D:/Dennis/Uni/bachelor/data/cull_pdb/cullpdb_pc25_res1.8_R0.25_d170706_chains6421"), "D:/Dennis/Uni/bachelor/data/cull_pdb/proteins/")
 
 if __name__ == '__main__':
