@@ -6,6 +6,7 @@ Created on 12.07.2017
 import matplotlib.pyplot as plt
 import seaborn as sea
 
+
 class histogramm:
     
     def plot(self, xlab, ylab, bins = 50, kde = True, rug = False, display = False, save = True):
