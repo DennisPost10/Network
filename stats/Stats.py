@@ -141,23 +141,23 @@ def sov(obs, pred, length):
             i += 1
     print(sov_arr)
     if len(sov_arr['H']) > 0:
-        h_sov = sum(sov_arr['H']) / counts_observed['H'] * 100
+        h_sov = sum(sov_arr['H']) / counts_observed['H']
     else:
         h_sov = -1
         
     if len(sov_arr['C']) > 0:
-        c_sov = sum(sov_arr['C']) / counts_observed['C'] * 100
+        c_sov = sum(sov_arr['C']) / counts_observed['C']
     else:
         c_sov = -1
         
-    if len(sov_arr['C']) > 0:
-        e_sov = sum(sov_arr['E']) / counts_observed['E'] * 100
+    if len(sov_arr['E']) > 0:
+        e_sov = sum(sov_arr['E']) / counts_observed['E']
     else:
         e_sov = -1
 #    print(h_sov)
 #    print(c_sov)
 #    print(e_sov)
-    sov3 = weighted_sov_sum / length * 100
+    sov3 = weighted_sov_sum / length
     print(sov3)
     return h_sov, c_sov, e_sov, sov3
     
