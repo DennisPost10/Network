@@ -38,7 +38,44 @@ def parse_q3(ss):
     for x in ss:
         ss_q3 += get_q3_state(x)
     return ss_q3
+
+found = set()
+     
+def read_ss_db(ss_db, filter_set, output_protein_directory):     
+    header_seq = None
+    header_ss = None
+    seq = ""
+    ss = ""
+    in_ss = False
+    x=0
+    with open(ss_db) as f:
+        line = f.readline().strip()
+        while line:
+            if line.startswith(">"):
+                
+                if line.endswith("sequence"):
+                    if header_ss != None:
+                        x+=add_chain(header_ss, seq, ss, filter_set, output_protein_directory)
+                    in_ss = False
+                    header_seq = line
+                    seq = ""
+                    ss = ""                       
+                else:
+                    in_ss = True
+                    header_ss = line
+            else:
+                if in_ss:
+                    ss += line
+                else:
+                    seq += line
+                
+            line = f.readline().strip('\n')
         
+        if header_ss != None:
+            x+=add_chain(header_ss, seq, ss, filter_set, output_protein_directory)
+    print(x)
+    print(filter_set.difference(found))
+    
 def read_fasta(mult_fasta_file, filter_set, output_protein_directory):
     header = None
     seq = ""
@@ -61,27 +98,21 @@ def read_fasta(mult_fasta_file, filter_set, output_protein_directory):
         if header != None:
             x+=add_chain(header, seq, filter_set, output_protein_directory)
     print(x)
-        
-def add_chain(header, sequence, filter_set, output_protein_directory):
+    
+def add_chain(header, sequence, ss, filter_set, output_protein_directory):
     state = 0
-    name, equis = get_parsed_header(header)
-    ss = None
+#    name, equis = get_parsed_header(header)
+    name = get_parsed_header(header)
     if name in filter_set:# or any(x in filter_set for x in equis):
+        found.add(name)
         sequence = get_parsed_seq(sequence)
-        ss = get_ss_from_source_code(name)
+#        ss = get_ss_from_source_code(name)
         ss_q3 = parse_q3(ss)
         print(name)
         state = 1
-    else:
-        for x in equis:
-            if x in filter_set:
-                ss = get_ss_from_source_code(x)
-                ss_q3 = parse_q3(ss)
-                print(name + " transformed to " + x)
-                name = x
-                state = 1
-    if ss != None:
-        print(equis)
+
+#    if ss != None:
+#        print(equis)
         print(sequence)
         print(ss)
         print(ss_q3)
@@ -91,7 +122,7 @@ def add_chain(header, sequence, filter_set, output_protein_directory):
         output_protein_directory += name + "/"
         if(os.path.exists(output_protein_directory)):
             print("skipped " + name)
-            return 1
+
         os.mkdir(output_protein_directory)
         output_protein_directory += name
         open(output_protein_directory + ".secondary_structure", "w").write(ss)
@@ -112,17 +143,20 @@ def get_parsed_seq(sequence):
 
 def get_parsed_header(header):
     
-    split_1 = header.split('||')
-    equis = []
-    if len(split_1) > 1:
-        equis = split_1[1].split()
-    name = header.split(None, 1)[0][1:]
-        
-    return name, equis
+#    split_1 = header.split('||')
+#    equis = []
+#    if len(split_1) > 1:
+#        equis = split_1[1].split()
+#    name = header.split(None, 1)[0][1:]
+#
+    name = header[1:].split(":")
+    name = name[0] + name[1]
+    return name#, equis
 
 def read_filter_file(name_file):
     incl = set()
     with open(name_file) as f:
+        line = f.readline() # skip header
         line = f.readline().strip()
         while line:
             incl.add(line.split(None, 1)[0]) 
@@ -130,7 +164,7 @@ def read_filter_file(name_file):
     return incl
 
 def main(argv):
-    read_fasta("/home/p/postd/bachelor/data/cull_pdb/pdbaa.nr", read_filter_file("/home/p/postd/bachelor/data/cull_pdb/cullpdb_pc25_res1.8_R0.25_d170706_chains6421"), "/home/p/postd/bachelor/data/cull_pdb/proteins/")
+    read_ss_db("/home/p/postd/bachelor/data/cull_pdb/ss.txt", read_filter_file("/home/p/postd/bachelor/data/cull_pdb/cullpdb_pc25_res1.8_R0.25_d170706_chains6421"), "/home/p/postd/bachelor/data/cull_pdb/proteins/")
 #    read_fasta("D:/Dennis/Uni/bachelor/data/cull_pdb/pdbaa.nr", read_filter_file("D:/Dennis/Uni/bachelor/data/cull_pdb/cullpdb_pc25_res1.8_R0.25_d170706_chains6421"), "D:/Dennis/Uni/bachelor/data/cull_pdb/proteins/")
 
 if __name__ == '__main__':

@@ -154,12 +154,10 @@ def sov(obs, pred, length):
 #        h_sov = sum(sov_arr['H']) / counts_observed['H']
 #    else:
 #        h_sov = -1
-        
 #    if len(sov_arr['C']) > 0:
 #        c_sov = sum(sov_arr['C']) / counts_observed['C']
 #    else:
 #        c_sov = -1
-        
 #    if len(sov_arr['E']) > 0:
 #        e_sov = sum(sov_arr['E']) / counts_observed['E']
 #    else:
