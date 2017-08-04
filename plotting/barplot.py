@@ -26,7 +26,7 @@ class barplot:
         self.data = data_dict
         self.output_file = output_file
         
-# plot HCE counts
+# plotting HCE counts
 # y={'cat': ['H','C','E'], 'val': [sum(d.num_h),sum(d.num_c),sum(d.num_e)]}
 # ax = sns.barplot(x='cat', y='val', data = y)
 # ax.set(xlabel="secondary structure", ylabel="occurences")
