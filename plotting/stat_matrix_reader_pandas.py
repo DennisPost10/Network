@@ -32,3 +32,4 @@ class stats_plotter:
     def __init__(self, matrix_file, output_directory):
         self.matrix_file = matrix_file
         self.output_directory = output_directory + "/"
+        self.import_stat_matrix()
