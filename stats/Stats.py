@@ -3,7 +3,6 @@ import os.path
 import sys
 import subprocess
 import matplotlib
-from plotting.stat_matrix_reader_pandas import stats_plotter
 
 def read_structures(prot_directory, prot, observed_in_subdir, predicted_dir, predicted_in_subdir):
     
@@ -61,6 +60,8 @@ def analyze(prot_name_file, prot_directory, observed_in_subdir, predicted_dir, p
         
     with open(prot_name_file) as f:
         prots = f.read().split("\n")
+        if prots[len(prots) - 1] == "":
+            prots = prots[:-1]
     print(prots)
     
     output_matrix = open(output_matrix_file, 'w')
@@ -110,7 +111,8 @@ def q3(ss_obs, ss_pred, length):
     else:
         e_score = -1
         
-    avg = (h_score + c_score + e_score)/i
+#    avg = (h_score + c_score + e_score)/i
+    avg = (max(h_score, 0) + max(c_score, 0) + max(e_score, 0))/i
 
     return correct, correct_counts, counts_observed, counts_predicted, mean, h_score, c_score, e_score, avg
 
