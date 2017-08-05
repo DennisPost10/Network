@@ -24,7 +24,7 @@ class stats_plotter:
     
     def plot_length_distribution(self):
         length_hist = histogramm(self.stats_matrix['length'], self.output_directory + ".length_distribution")
-        length_hist.plot(int(max(self.stats_matrix['length']/10)) + 1)
+        length_hist.plot(ylab="#proteins", xlab="protein length", save=False, display=True)
         
 #        ss_counts = barplot(, output_file)
         

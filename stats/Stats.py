@@ -1,7 +1,6 @@
 from collections import Counter
 import os.path
 import sys
-from numpy import average
 import subprocess
 import matplotlib
 from plotting.stat_matrix_reader_pandas import stats_plotter
@@ -189,8 +188,8 @@ def main():
         sys.exit()
     analyze(args[0], args[1], int(args[2]), args[3], int(args[4]), args[5], int(args[6]))
     output_dir = os.path.splitext(args[5])[0]
-#    stat_plot = stats_plotter(args[5], output_dir)
-#    stat_plot.plot_all_stats()
+    stat_plot = stats_plotter(args[5], output_dir)
+    stat_plot.plot_all_stats()
     
 if __name__ == '__main__':
     main()
