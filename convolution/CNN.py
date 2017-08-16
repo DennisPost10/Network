@@ -8,7 +8,6 @@ from parser1 import InputParser
 import tensorflow as tf
 from utils.ConfigFileParser import Configurations
 
-
 def conv1d(x, neurons, name_val):
     return tf.nn.conv1d(x, filters=neurons, stride=1, padding='SAME', name=name_val)
 
@@ -75,11 +74,22 @@ class CNN():
             self.h_count = tf.count_nonzero(tf.equal(tf.argmax(self.y, 2), 0), name = "h_count", dtype = tf.int32)
             self.c_count = tf.count_nonzero(tf.equal(tf.argmax(self.y, 2), 1), name = "c_count", dtype = tf.int32)
             self.e_count = tf.count_nonzero(tf.equal(tf.argmax(self.y, 2), 2), name = "e_count", dtype = tf.int32)
+            
             self.h_accuracy = tf.divide(tf.shape(tf.sets.set_intersection(tf.transpose(tf.where(tf.equal(tf.argmax(self.y,2), 0))), (tf.transpose(tf.where(tf.equal(tf.argmax(self.y_o,2), 0))))))[1], self.h_count, name = "h_accuracy")
             self.c_accuracy = tf.divide(tf.shape(tf.sets.set_intersection(tf.transpose(tf.where(tf.equal(tf.argmax(self.y,2), 1))), (tf.transpose(tf.where(tf.equal(tf.argmax(self.y_o,2), 1))))))[1], self.c_count, name = "c_accuracy")
             self.e_accuracy = tf.divide(tf.shape(tf.sets.set_intersection(tf.transpose(tf.where(tf.equal(tf.argmax(self.y,2), 2))), (tf.transpose(tf.where(tf.equal(tf.argmax(self.y_o,2), 2))))))[1], self.e_count, name = "e_accuracy")
             self.global_step = tf.Variable(0, name='global_step', trainable=False)
-            self.loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(labels=self.y, logits=self.y_o), name="loss")
+            
+            self.prot_lengths = tf.placeholder(tf.int32, [None], name = "prot_lengths")
+            self.mat = self.y * tf.log(self.y_o)
+            self.batch_s = tf.shape(self.mat)[0]
+            self.mat = tf.reshape(self.mat, [self.batch_s, -1])
+#            self.y_o = tf.reshape(self.y_o, [self.sess.run(tf.shape(self.y_o)[0]), -1])
+            self.mask = tf.contrib.crf._lengths_to_masks(self.prot_lengths * 3, self.max_prot_length * 3)
+            self.mat = tf.multiply(tf.cast(self.mat, tf.float32), self.mask)
+            self.mat = tf.reshape(self.mat, [self.batch_s, self.max_prot_length, 3])
+            
+            self.loss = tf.reduce_mean(-tf.reduce_sum(self.mat, reduction_indices = 1), name="loss")
 #            self.train_step = tf.train.MomentumOptimizer(learning_rate=self.learning_rate, momentum=self.momentum_val, name="train_step").minimize(self.loss, global_step=self.global_step)
             self.train_step = tf.train.AdamOptimizer(learning_rate=self.learning_rate, name="train_step").minimize(self.loss, global_step=self.global_step)
             self.init_op = tf.global_variables_initializer()
@@ -119,20 +129,20 @@ class CNN():
             batch_count = 0
             for step in range(self.start_index, self.start_index + self.steps):
                 if step % 1 == 0:
-                    loss_val, accuracy_eval, p, o = self.sess.run([self.loss, self.accuracy, self.predicted, self.observed], feed_dict={self.x: self.prot_it.test_set, self.y: self.prot_it.test_set_o, self.keep_prob: 1})
+                    loss_val, accuracy_eval, p, o = self.sess.run([self.loss, self.accuracy, self.predicted, self.observed], feed_dict={self.x: self.prot_it.test_set, self.y: self.prot_it.test_set_o, self.prot_lengths: self.prot_it.test_set_l, self.keep_prob: 1})
                     print('Step %d: eval_accuracy = %.3f loss = %.3f' % (step, accuracy_eval, loss_val))
-                    print(p[2])
-                    print(o[2])
+                    print(p[3])
+                    print(o[3])
                     if(accuracy_eval > self.winner_acc or loss_val < self.winner_loss):
                         self.winner_acc = accuracy_eval
                         self.winner_loss = loss_val
 
-                ret_prots, ret_prots_o = self.prot_it.next_prots(self.batch_size)
-                _ = self.sess.run(self.train_step, feed_dict={self.x: ret_prots, self.y: ret_prots_o, self.keep_prob: self.keep_prob_val})
+                ret_prots, ret_prots_o, lengths = self.prot_it.next_prots(self.batch_size)
+                _ = self.sess.run(self.train_step, feed_dict={self.x: ret_prots, self.y: ret_prots_o, self.keep_prob: self.keep_prob_val, self.prot_lengths: lengths})
                 batch_count += 1
         
             self.saver.save(self.sess, (self.output_directory + '/save/' + self.name), global_step=self.global_step)
-            loss_val, accuracy_eval = self.sess.run([self.loss, self.accuracy], feed_dict={self.x: self.prot_it.test_set, self.y: self.prot_it.test_set_o, self.keep_prob: 1})
+            loss_val, accuracy_eval = self.sess.run([self.loss, self.accuracy], feed_dict={self.x: self.prot_it.test_set, self.y: self.prot_it.test_set_o, self.prot_lengths: self.prot_it.test_set_l, self.keep_prob: 1})
             print('Step %d: eval_accuracy = %.3f loss = %.3f' % (step, accuracy_eval, loss_val))
 
             print("training finished")

@@ -5,7 +5,7 @@ import sys
 
 import matplotlib
 
-from plotting.stat_matrix_reader_pandas import stats_plotter
+#from plotting.stat_matrix_reader_pandas import stats_plotter
 
 
 def read_structures(prot_directory, prot, observed_in_subdir, predicted_dir, predicted_in_subdir):
