@@ -129,10 +129,12 @@ class CNN():
             batch_count = 0
             for step in range(self.start_index, self.start_index + self.steps):
                 if step % 1 == 0:
-                    loss_val, accuracy_eval, p, o = self.sess.run([self.loss, self.accuracy, self.predicted, self.observed], feed_dict={self.x: self.prot_it.test_set, self.y: self.prot_it.test_set_o, self.prot_lengths: self.prot_it.test_set_l, self.keep_prob: 1})
+                    loss_val, accuracy_eval, p, o, mat, out = self.sess.run([self.loss, self.accuracy, self.predicted, self.observed, self.mat, self.y_o], feed_dict={self.x: self.prot_it.test_set, self.y: self.prot_it.test_set_o, self.prot_lengths: self.prot_it.test_set_l, self.keep_prob: 1})
                     print('Step %d: eval_accuracy = %.3f loss = %.3f' % (step, accuracy_eval, loss_val))
                     print(p[3])
                     print(o[3])
+                    print(mat)
+                    print(out)
                     if(accuracy_eval > self.winner_acc or loss_val < self.winner_loss):
                         self.winner_acc = accuracy_eval
                         self.winner_loss = loss_val
