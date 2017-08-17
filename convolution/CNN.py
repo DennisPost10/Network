@@ -81,7 +81,9 @@ class CNN():
             self.global_step = tf.Variable(0, name='global_step', trainable=False)
             
             self.prot_lengths = tf.placeholder(tf.int32, [None], name = "prot_lengths")
-            self.mat = self.y * tf.log(self.y_o)
+            self.y_o = tf.nn.softmax(self.y_o, name = "softmax")
+            self.y_o += tf.constant(1e-15)
+            self.mat = tf.multiply(self.y, tf.log(self.y_o))
             self.batch_s = tf.shape(self.mat)[0]
             self.mat = tf.reshape(self.mat, [self.batch_s, -1])
 #            self.y_o = tf.reshape(self.y_o, [self.sess.run(tf.shape(self.y_o)[0]), -1])
@@ -89,7 +91,7 @@ class CNN():
             self.mat = tf.multiply(tf.cast(self.mat, tf.float32), self.mask)
             self.mat = tf.reshape(self.mat, [self.batch_s, self.max_prot_length, 3])
             
-            self.loss = tf.reduce_mean(-tf.reduce_sum(self.mat, reduction_indices = 1), name="loss")
+            self.loss = tf.reduce_mean(-tf.reduce_sum(self.mat, reduction_indices = [1,2]), name="loss")
 #            self.train_step = tf.train.MomentumOptimizer(learning_rate=self.learning_rate, momentum=self.momentum_val, name="train_step").minimize(self.loss, global_step=self.global_step)
             self.train_step = tf.train.AdamOptimizer(learning_rate=self.learning_rate, name="train_step").minimize(self.loss, global_step=self.global_step)
             self.init_op = tf.global_variables_initializer()
@@ -129,12 +131,23 @@ class CNN():
             batch_count = 0
             for step in range(self.start_index, self.start_index + self.steps):
                 if step % 1 == 0:
-                    loss_val, accuracy_eval, p, o, mat, out = self.sess.run([self.loss, self.accuracy, self.predicted, self.observed, self.mat, self.y_o], feed_dict={self.x: self.prot_it.test_set, self.y: self.prot_it.test_set_o, self.prot_lengths: self.prot_it.test_set_l, self.keep_prob: 1})
+                    loss_val, accuracy_eval, p, o, mat = self.sess.run([self.loss, self.accuracy, self.predicted, self.observed, self.mat], feed_dict={self.x: self.prot_it.test_set, self.y: self.prot_it.test_set_o, self.prot_lengths: self.prot_it.test_set_l, self.keep_prob: 1})
                     print('Step %d: eval_accuracy = %.3f loss = %.3f' % (step, accuracy_eval, loss_val))
                     print(p[3])
                     print(o[3])
-                    print(mat)
-                    print(out)
+                    print(mat[3])
+#                    print("next")
+#                    fail=np.sum(np.isnan(mat))
+#                    if fail > 0:
+#                        print(mat)
+#                        print(log_yo)
+#                        print(out)
+#                        print(o)
+#                    print(np.sum(np.isnan(log_yo)))
+#                    print(np.sum(np.isnan(out)))
+#                    print(np.sum(np.isnan(o)))
+                    
+#                    print(out[3])
                     if(accuracy_eval > self.winner_acc or loss_val < self.winner_loss):
                         self.winner_acc = accuracy_eval
                         self.winner_loss = loss_val
