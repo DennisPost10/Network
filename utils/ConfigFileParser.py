@@ -31,6 +31,9 @@ class Configurations:
                         arr = val.split(",")
                         arr = list(map(float, arr))
                         self.configs[key] = arr
+                    elif typ == "string_array":
+                        arr = val.split(",")
+                        self.configs[key] = arr                        
                     else:
                         self.configs[key] = val
         print(self.configs)
