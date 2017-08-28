@@ -1,11 +1,12 @@
 #!/usr/bin/env python
 
 import getopt
-import os
-import subprocess
 import glob
+import os
 from os.path import basename
+import subprocess
 import sys
+
 
 def getInfo():
 	return "Usage: ./wrapper.py -n network_name -f learning_rate_nw1 -s learning_rate_nw2 -p <prot_directory> -t <training_prot_name_file> -o <output_directory> -e <test_prot_name_file> -b batch_size -x steps"

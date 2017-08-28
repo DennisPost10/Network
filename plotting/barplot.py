@@ -7,6 +7,7 @@ Created on 12.07.2017
 import matplotlib.pyplot as plt
 import seaborn as sea
 
+
 class barplot:
     
     def plot(self, xlab, ylab, invert = False, display = False, save = True):

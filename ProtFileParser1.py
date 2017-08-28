@@ -1,8 +1,10 @@
+import os
+
 from sklearn.utils import shuffle
 
 import numpy as np
 from parser1 import InputParser
-import os
+
 
 class ProtFileParser:
 	

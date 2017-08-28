@@ -2,14 +2,14 @@ import os
 import sys
 import tempfile
 
-from utils.ConfigFileParser import Configurations
 from ProtFileParser2 import ProtFileParser2
 import matplotlib.pyplot as plt
 from network_c import nw1
+import network_c
 import numpy as np
 from parser2 import InputParser2
 import tensorflow as tf
-import network_c
+from utils.ConfigFileParser import Configurations
 
 
 class nw2:

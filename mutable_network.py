@@ -24,6 +24,9 @@ class nw1:
 			ss += sss[i]
 		return ss
 
+	def conv1d(self, x, neurons, name_val):
+		return tf.nn.conv1d(x, filters=neurons, stride=1, padding='SAME', name=name_val)
+
 	def weight_variable(self, shape, name_val):
 		initial = tf.truncated_normal(shape, stddev=0.1)
 		return tf.Variable(initial, tf.float32, name=name_val)
@@ -31,6 +34,32 @@ class nw1:
 	def bias_variable(self, shape, name_val):
 		initial = tf.constant(0.1, shape=shape)
 		return tf.Variable(initial, tf.float32, name=name_val)
+
+	def init_optimizer(self):
+		if self.optimizer == "adam":
+			return tf.train.AdamOptimizer(self.learning_rate)
+		else:
+			if self.optimizer == "adagrad":
+				return tf.train.AdagradOptimizer(self.learning_rate)
+			elif self.optimizer == "momentum":
+				return tf.train.MomentumOptimizer(self.learning_rate, self.momentum_val)
+			elif self.optimizer == "gradient":
+				return tf.train.GradientDescentOptimizer(self.learning_rate)
+			elif self.optimizer == "adadelta":
+				return tf.train.AdadeltaOptimizer(self.learning_rate)
+			else:
+				return None
+
+	def layer(self, input, layer_count, output_channels, relu = True, dropout = False, output_layer = False, convolution = None):
+		if dropout:
+			hidden_layer = tf.nn.dropout(input, self.keep_prob_val, "dropout")
+		else:
+			hidden_weights = self.weight_variable([tf.shape(input)[0], output_channels], "weight")
+			bias = self.bias_variable([output_channels], "bias")
+			hidden_layer = tf.add(tf.matmul(input, hidden_weights), bias, name = "output_layer")
+		if relu:
+			hidden_layer = tf.nn.relu(hidden_layer)
+		return hidden_layer
 
 	def build_graph(self):
 		self.g = tf.Graph()
@@ -66,7 +95,10 @@ class nw1:
 			self.e_accuracy = tf.divide(tf.shape(tf.sets.set_intersection(tf.transpose(tf.where(tf.equal(tf.argmax(self.y,1), 2))), (tf.transpose(tf.where(tf.equal(tf.argmax(self.y_p,1), 2))))))[1], self.e_count, name = "e_accuracy")
 			self.global_step = tf.Variable(0, name='global_step', trainable=False)
 			self.loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(labels=self.y, logits=self.y_p), name="loss")
-			self.train_step = tf.train.MomentumOptimizer(learning_rate=self.learning_rate, momentum=self.momentum_val, name="train_step").minimize(self.loss, global_step=self.global_step)
+			
+#			self.train_step = tf.train.MomentumOptimizer(learning_rate=self.learning_rate, momentum=self.momentum_val, name="train_step").minimize(self.loss, global_step=self.global_step)
+			self.train_step = self.init_optimizer().minimize(self.loss, global_step = self.global_step)
+			
 			self.init_op = tf.global_variables_initializer()
 			self.saver = tf.train.Saver(max_to_keep=1)
 			

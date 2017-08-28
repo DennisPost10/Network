@@ -8,8 +8,8 @@ import os.path
 import sys
 
 import pandas as p
-from plotting.histogramm import histogramm
 from plotting.barplot import barplot
+from plotting.histogramm import histogramm
 
 
 class stats_plotter:

@@ -8,6 +8,7 @@ from parser1 import InputParser
 import tensorflow as tf
 from utils.ConfigFileParser import Configurations
 
+
 def conv1d(x, neurons, name_val):
     return tf.nn.conv1d(x, filters=neurons, stride=1, padding='SAME', name=name_val)
 
@@ -205,7 +206,7 @@ class CNN():
             plt.hist(scores_per_prot)
             plt.savefig(self.output_directory + base + "_prot_scores.png")
             print("%d out of %d correct predicted (%.3f)" % (number_correct, looked_at, number_correct / looked_at))
-            
+        
     def __init__(self, config_file):
         
         configs = Configurations(config_file).configs
