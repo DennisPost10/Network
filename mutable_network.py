@@ -50,16 +50,25 @@ class nw1:
 			else:
 				return None
 
-	def layer(self, input, layer_count, output_channels, relu = True, dropout = False, output_layer = False, convolution = None):
-		if dropout:
-			hidden_layer = tf.nn.dropout(input, self.keep_prob_val, "dropout")
-		else:
-			hidden_weights = self.weight_variable([tf.shape(input)[0], output_channels], "weight")
-			bias = self.bias_variable([output_channels], "bias")
-			hidden_layer = tf.add(tf.matmul(input, hidden_weights), bias, name = "output_layer")
-		if relu:
-			hidden_layer = tf.nn.relu(hidden_layer)
-		return hidden_layer
+	def layer(self, input_layer, layer_count):
+		if layer_count >= len(self.layers):
+			return None
+		next_layer = self.layers[layer_count]
+		with tf.name_scope(next_layer.name):
+			if next_layer.layer_type == "dropout":
+				hidden_layer = tf.nn.dropout(input_layer, self.keep_prob_val, "dropout")
+			elif next_layer.layer_type == "fully":
+				hidden_weights = self.weight_variable([tf.shape(input)[0], next_layer.output_channels], "weight")
+				bias = self.bias_variable([next_layer.output_channels], "bias")
+				hidden_layer = tf.add(tf.matmul(input_layer, hidden_weights), bias, name = "output_layer")
+			elif next_layer.layer_type == "conv":
+				hidden_weights = self.weight_variable([next_layer.conv_window_size, input_layer.output_channels, next_layer.output_channels], "weight")
+				bias = self.bias_variable([next_layer.output_channels], "bias")
+				hidden_layer = self.conv1d(input_layer.output_channels, , name = "layer")
+			if next.layer.relu:
+				hidden_layer = tf.nn.relu(hidden_layer)
+		self.tf_layers.append(hidden_layer)
+		return self.layer(next_layer, layer_count + 1)
 
 	def build_graph(self):
 		self.g = tf.Graph()
@@ -239,7 +248,8 @@ class nw1:
 #		self.meta_graph = configs["meta_graph"]
 #		self.train = configs["train"]
 #		self.predict = configs["predict"]
-		
+		self.layers = configs["parsed_layers"]
+		self.tf_layers = []
 		self.output_directory = self.output_directory + "/" + self.name + "/"
 		if not os.path.exists(self.output_directory):
 			os.makedirs(self.output_directory)
