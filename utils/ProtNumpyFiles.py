@@ -27,13 +27,13 @@ def check(matrix, one_hots):
     print(one_hots.shape)
     
 def main(argv):
-    if len(argv) < 3:
+    if len(argv) < 4:
         print("prot_name_file, ss_directory, tab_directory, output_file")
         sys.exit()
     prot_name_file = argv[0]
     ss_directory = argv[1]
-    tab_directory = argv[1]
-    output_file = argv[2]
+    tab_directory = argv[2]
+    output_file = argv[3]
     write_prot_mat(prot_name_file, ss_directory, tab_directory, output_file)
     check(output_file + ".matrix.npy", output_file + ".one_hots.npy")
 
