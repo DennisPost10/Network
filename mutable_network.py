@@ -50,7 +50,7 @@ class nw1:
 			else:
 				return None
 
-	def layer(self, input_layer, layer_count):
+	def layer(self, input_layer, input_tf_layer, layer_count):
 		if layer_count >= len(self.layers):
 			return None
 		next_layer = self.layers[layer_count]
@@ -64,11 +64,12 @@ class nw1:
 			elif next_layer.layer_type == "conv":
 				hidden_weights = self.weight_variable([next_layer.conv_window_size, input_layer.output_channels, next_layer.output_channels], "weight")
 				bias = self.bias_variable([next_layer.output_channels], "bias")
-				hidden_layer = self.conv1d(input_layer.output_channels, , name = "layer")
+				hidden_layer = self.conv1d(input_tf_layer, hidden_weights, name = "layer")
 			if next.layer.relu:
 				hidden_layer = tf.nn.relu(hidden_layer)
-		self.tf_layers.append(hidden_layer)
-		return self.layer(next_layer, layer_count + 1)
+		tf_layer = hidden_layer
+		self.tf_layers.append(tf_layer)
+		return self.layer(next_layer, tf_layer, layer_count + 1)
 
 	def build_graph(self):
 		self.g = tf.Graph()
@@ -153,18 +154,25 @@ class nw1:
 		
 			batch_count = 0
 			better = False
+			
+			check_range = 100
+			alpha = 0.001
+			lower_acc = self.winner_acc, lower_loss = self.winner_loss
+			
 			for step in range(self.start_index, self.start_index + self.steps):
-				if step % 100 == 0:
+				if step % check_range == 0:
 					summarystr, loss_val, accuracy_eval, h_acc, c_acc, e_acc = self.sess.run([summary, self.loss, self.accuracy, self.h_accuracy, self.c_accuracy, self.e_accuracy], feed_dict={self.x: self.prot_it.test_set, self.y: self.prot_it.test_set_o, self.keep_prob: 1})
-					if(accuracy_eval > self.winner_acc or loss_val < self.winner_loss):
-						self.winner_acc = accuracy_eval
-						self.winner_loss = loss_val
+					if(accuracy_eval - lower_acc > alpha or loss_val - lower_loss < alpha):
+						self.winner_acc = max(self.winner_acc, accuracy_eval)
+						self.winner_loss = min(self.winner_loss, loss_val)
+						lower_acc = accuracy_eval
+						lower_loss = loss_val
 						better = True
 						self.saver.save(self.sess, (self.output_directory + '/save/' + self.name), global_step=self.global_step)
-					if step % 1000 == 0:
+#				if step % 1000 == 0:
 						print('Step %d: eval_accuracy = %.3f loss = %.3f H: %.3f C: %.3f E: %.3f (%d)' % (step, accuracy_eval, loss_val, h_acc, c_acc, e_acc, batch_count))
 						summary_writer.add_summary(summarystr, step)			
-					if step % 10000 == 0:
+#					if step % 10000 == 0:
 						if better:
 							better = False
 						else:
@@ -265,7 +273,7 @@ class nw1:
 	#		nw2.
 		
 		self.winner_acc = -1.0
-		self.winner_loss = 1000	
+		self.winner_loss = Infinity
 		self.restored_graph = False
 			
 		self.start_index = 0

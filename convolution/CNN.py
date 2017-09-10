@@ -68,7 +68,7 @@ class CNN():
 
             self.prot_lengths = tf.placeholder(tf.int64, [None], name = "prot_lengths")
             self.y_o = tf.nn.softmax(self.y_o, name = "softmax")
-            self.y_o += tf.constant(1e-15)
+            self.y_o += tf.constant(1e-15) # avoid zeros as input for log: log(0) = -inf -> null
             self.mat = tf.multiply(self.y, tf.log(self.y_o))
             self.batch_s = tf.shape(self.mat)[0]
             self.mat = tf.reshape(self.mat, [self.batch_s, -1])

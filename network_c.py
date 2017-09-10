@@ -7,6 +7,7 @@ import numpy as np
 from parser1 import InputParser
 import tensorflow as tf
 from utils.ConfigFileParser import Configurations
+from numpy import Infinity
 
 
 sss = ['H', 'C', 'E']
@@ -112,14 +113,20 @@ class nw1:
 		
 			batch_count = 0
 			better = False
+			check_range = 100
+#			lower_acc = 0, upper_acc = 0, lower_loss = 0, upper_loss = 0
 			for step in range(self.start_index, self.start_index + self.steps):
-				if step % 100 == 0:
+				if step % check_range == 0:
 					summarystr, loss_val, accuracy_eval, h_acc, c_acc, e_acc = self.sess.run([summary, self.loss, self.accuracy, self.h_accuracy, self.c_accuracy, self.e_accuracy], feed_dict={self.x: self.prot_it.test_set, self.y: self.prot_it.test_set_o, self.keep_prob: 1})
-					if(accuracy_eval > self.winner_acc or loss_val < self.winner_loss):
-						self.winner_acc = accuracy_eval
-						self.winner_loss = loss_val
-						better = True
-						self.saver.save(self.sess, (self.output_directory + '/save/' + self.name), global_step=self.global_step)
+#					lower_acc = upper_acc
+#					lower_loss = upper_loss
+#					upper_acc = accuracy_eval
+#					upper_loss = loss_val
+#					if(accuracy_eval > self.winner_acc or loss_val < self.winner_loss):
+					self.winner_acc = accuracy_eval
+					self.winner_loss = loss_val
+					better = True
+					self.saver.save(self.sess, (self.output_directory + '/save/' + self.name), global_step=self.global_step)
 					if step % 1000 == 0:
 						print('Step %d: eval_accuracy = %.3f loss = %.3f H: %.3f C: %.3f E: %.3f (%d)' % (step, accuracy_eval, loss_val, h_acc, c_acc, e_acc, batch_count))
 						summary_writer.add_summary(summarystr, step)			
@@ -223,7 +230,7 @@ class nw1:
 	#		nw2.
 		
 		self.winner_acc = -1.0
-		self.winner_loss = 1000	
+		self.winner_loss = Infinity	
 		self.restored_graph = False
 			
 		self.start_index = 0
