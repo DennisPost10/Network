@@ -15,8 +15,6 @@ def write_prot_mat(prot_file, ss_directory, tab_directory, output_file):
         prot_outcomes.append(np.loadtxt(ss_directory + "/" + prot + "/" + prot + ".ss_one_hot", dtype = int, delimiter = "\t"))
         
         
-    print(prot_matrices.shape)
-    print(prot_outcomes.shape)
     np.save(output_file + ".matrix", prot_matrices)
     np.save(output_file + ".one_hots", prot_outcomes)
 
