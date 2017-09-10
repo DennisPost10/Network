@@ -1,7 +1,7 @@
 import numpy as np
 import sys
 
-def write_prot_mat(prot_file, prot_directory, output_file):
+def write_prot_mat(prot_file, ss_directory, tab_directory, output_file):
     prots = []
     with open(prot_file) as file:
         for line in file:
@@ -11,8 +11,8 @@ def write_prot_mat(prot_file, prot_directory, output_file):
     prot_matrices = []
     prot_outcomes = []
     for prot in prots:
-        prot_matrices.append(np.loadtxt(prot_directory + "/" + prot + "/" + prot + ".tab", delimiter="\t", skiprows=1, usecols=range(2, 22), dtype=float))
-        prot_outcomes.append(np.loadtxt(prot_directory + "/" + prot + "/" + prot + ".ss_one_hot", dtype = int, delimiter = "\t"))
+        prot_matrices.append(np.loadtxt(tab_directory + "/" + prot + "/" + prot + ".tab", delimiter="\t", skiprows=1, usecols=range(2, 22), dtype=float))
+        prot_outcomes.append(np.loadtxt(ss_directory + "/" + prot + "/" + prot + ".ss_one_hot", dtype = int, delimiter = "\t"))
         
         
     print(prot_matrices.shape)
@@ -28,12 +28,13 @@ def check(matrix, one_hots):
     
 def main(argv):
     if len(argv) < 3:
-        print("prot_name_file, prot_directory, output_file")
+        print("prot_name_file, ss_directory, tab_directory, output_file")
         sys.exit()
     prot_name_file = argv[0]
-    prot_directory = argv[1]
+    ss_directory = argv[1]
+    tab_directory = argv[1]
     output_file = argv[2]
-    write_prot_mat(prot_name_file, prot_directory, output_file)
+    write_prot_mat(prot_name_file, ss_directory, tab_directory, output_file)
     check(output_file + ".matrix.npy", output_file + ".one_hots.npy")
 
 if __name__ == "__main__":
