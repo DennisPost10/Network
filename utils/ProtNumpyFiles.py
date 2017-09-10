@@ -10,7 +10,10 @@ def write_prot_mat(prot_file, ss_directory, tab_directory, output_file):
                         
     prot_matrices = []
     prot_outcomes = []
+    i = 0
     for prot in prots:
+        i += 1
+        print(str(i) + " of " + str(len(prots)))
         prot_matrices.append(np.loadtxt(tab_directory + "/" + prot + "/" + prot + ".tab", delimiter="\t", skiprows=1, usecols=range(2, 22), dtype=float))
         prot_outcomes.append(np.loadtxt(ss_directory + "/" + prot + "/" + prot + ".ss_one_hot", dtype = int, delimiter = "\t"))
         
