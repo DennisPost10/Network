@@ -20,13 +20,7 @@ def write_prot_mat(prot_file, ss_directory, tab_directory, output_file):
         
     np.save(output_file + ".matrix", prot_matrices)
     np.save(output_file + ".one_hots", prot_outcomes)
-
-def check(matrix, one_hots):
-    data=np.load(matrix)
-    print(data.shape)
-    one_hots=np.load(one_hots)
-    print(one_hots.shape)
-    
+ 
 def main(argv):
     if len(argv) < 4:
         print("prot_name_file, ss_directory, tab_directory, output_file")
@@ -36,7 +30,6 @@ def main(argv):
     tab_directory = argv[2]
     output_file = argv[3]
     write_prot_mat(prot_name_file, ss_directory, tab_directory, output_file)
-    check(output_file + ".matrix.npy", output_file + ".one_hots.npy")
 
 if __name__ == "__main__":
     main(sys.argv[1:])

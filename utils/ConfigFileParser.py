@@ -3,7 +3,7 @@ Created on 20.06.2017
 
 @author: Dennis
 '''
-from utils import Layer
+from utils.Layer import Layer
 
 
 class Configurations:
@@ -11,7 +11,7 @@ class Configurations:
     def __init__(self, config_file):
         self.configs = {}
         with open(config_file) as config:
-            layers = []
+            layers = list()
             for line in config:
                 if not line.startswith("#"):
                     key, val, typ = line.split("\t")
@@ -39,11 +39,11 @@ class Configurations:
                         self.configs[key] = val
                 else:
                     if line.startswith("#layer"):
-                        useless, name, layer_type, relu, output_channels, conv_window_size = line.split("\t")
+                        useless, name, layer_type, relu, output_channels, window_size = line.split("\t")
                         relu = (val == "true" or val == "TRUE" or val == "True" or val == "T")
                         output_channels = int(output_channels)
-                        conv_window_size = int(conv_window_size)
-                        layers.add(Layer(name, layer_type, relu, output_channels, conv_window_size))
+                        window_size = int(window_size)
+                        layers.append(Layer(name, layer_type, relu, output_channels, window_size))
         self.configs["parsed_layers"] = layers
         print(self.configs)
 #Configurations("D:/Dennis/Uni/bachelor/double_network/config.txt")

@@ -1,17 +1,19 @@
 import os
 import sys
 
-from ProtFileParser1 import ProtFileParser
 import matplotlib.pyplot as plt
 import numpy as np
 from parser1 import InputParser
 import tensorflow as tf
+from utils.Layer import Layer
 from utils.ConfigFileParser import Configurations
+from utils.InputHandler import Input_Handler
+from numpy import Infinity
 
 
 sss = ['H', 'C', 'E']
 
-class nw1:
+class mutable_network:
 
 	def one_hot(self, index):
 		ret = np.zeros(3)
@@ -56,16 +58,18 @@ class nw1:
 		next_layer = self.layers[layer_count]
 		with tf.name_scope(next_layer.name):
 			if next_layer.layer_type == "dropout":
-				hidden_layer = tf.nn.dropout(input_layer, self.keep_prob_val, "dropout")
+				hidden_layer = tf.nn.dropout(input_tf_layer, self.keep_prob_val, "dropout")
 			elif next_layer.layer_type == "fully":
-				hidden_weights = self.weight_variable([tf.shape(input)[0], next_layer.output_channels], "weight")
-				bias = self.bias_variable([next_layer.output_channels], "bias")
-				hidden_layer = tf.add(tf.matmul(input_layer, hidden_weights), bias, name = "output_layer")
+				print(input_layer.window_size)
+				print(next_layer.window_size)
+				hidden_weights = self.weight_variable([input_layer.window_size, next_layer.window_size], "weight")
+				bias = self.bias_variable([next_layer.window_size], "bias")
+				hidden_layer = tf.add(tf.matmul(input_tf_layer, hidden_weights), bias, name = "output_layer")
 			elif next_layer.layer_type == "conv":
-				hidden_weights = self.weight_variable([next_layer.conv_window_size, input_layer.output_channels, next_layer.output_channels], "weight")
+				hidden_weights = self.weight_variable([next_layer.window_size, input_layer.output_channels, next_layer.output_channels], "weight")
 				bias = self.bias_variable([next_layer.output_channels], "bias")
 				hidden_layer = self.conv1d(input_tf_layer, hidden_weights, name = "layer")
-			if next.layer.relu:
+			if next_layer.relu:
 				hidden_layer = tf.nn.relu(hidden_layer)
 		tf_layer = hidden_layer
 		self.tf_layers.append(tf_layer)
@@ -75,36 +79,34 @@ class nw1:
 		self.g = tf.Graph()
 		with self.g.as_default():
 			self.keep_prob = tf.placeholder(tf.float32, name="keep_prob")
-			# input
-			self.x = tf.placeholder(tf.float32, [None, 300], name="x")
-			# final output
-			self.y = tf.placeholder(tf.float32, [None, 3], name="y")
-			# first fully connected layer with weights and biases using relu
-			with tf.name_scope('first'):
-				self.W = self.weight_variable([300, 75], "weight")
-				self.b = self.bias_variable([75], "bias")
-				self.y_ = tf.nn.relu(tf.matmul(self.x, self.W) + self.b, name="layer")
-			# drop-out layer
-			with tf.name_scope('drop_out'):
-				self.drop_out = tf.nn.dropout(self.y_, self.keep_prob, name="drop")
+			
+			if self.cnn_bool:
+				# input
+				self.x = tf.placeholder(tf.float32, [None, self.max_prot_length, self.features], name="x")
+				# final output
+				self.y = tf.placeholder(tf.float32, [None, self.max_prot_length, self.ss_features], name="y")
+			
+				self.layer(Layer("x", "", False, self.features, self.max_prot_length), self.x, 0)
+			
+			else:
+				# input
+				self.x = tf.placeholder(tf.float32, [None, self.window_size * self.features], name="x")
+				# final output
+				self.y = tf.placeholder(tf.float32, [None, self.ss_features], name="y")
 
-			# second fully connected layer for 3-state output
-			with tf.name_scope('second'):
-				self.W_p = self.weight_variable([75, 3], "weight")
-				self.b_p = self.bias_variable([3], "bias")
-				self.y_p = tf.add(tf.matmul(self.drop_out, self.W_p), self.b_p, name="layer")
+				self.layer(Layer("x", "", False, 1, self.window_size * self.features), self.x, 0)
 
-			self.correct_prediction = tf.equal(tf.argmax(self.y_p, 1), tf.argmax(self.y, 1), name="correct_prediction")
+			self.correct_prediction = tf.equal(tf.argmax(self.tf_layers[self.layer_count - 1], 1), tf.argmax(self.y, 1), name="correct_prediction")
 			self.accuracy = tf.reduce_mean(tf.cast(self.correct_prediction, tf.float32), name="accuracy")
 			self.observed = tf.argmax(self.y, 1)
 			self.h_count = tf.count_nonzero(tf.equal(tf.argmax(self.y, 1), 0), name = "h_count", dtype = tf.int32)
 			self.c_count = tf.count_nonzero(tf.equal(tf.argmax(self.y, 1), 1), name = "c_count", dtype = tf.int32)
 			self.e_count = tf.count_nonzero(tf.equal(tf.argmax(self.y, 1), 2), name = "e_count", dtype = tf.int32)
-			self.h_accuracy = tf.divide(tf.shape(tf.sets.set_intersection(tf.transpose(tf.where(tf.equal(tf.argmax(self.y,1), 0))), (tf.transpose(tf.where(tf.equal(tf.argmax(self.y_p,1), 0))))))[1], self.h_count, name = "h_accuracy")
-			self.c_accuracy = tf.divide(tf.shape(tf.sets.set_intersection(tf.transpose(tf.where(tf.equal(tf.argmax(self.y,1), 1))), (tf.transpose(tf.where(tf.equal(tf.argmax(self.y_p,1), 1))))))[1], self.c_count, name = "c_accuracy")
-			self.e_accuracy = tf.divide(tf.shape(tf.sets.set_intersection(tf.transpose(tf.where(tf.equal(tf.argmax(self.y,1), 2))), (tf.transpose(tf.where(tf.equal(tf.argmax(self.y_p,1), 2))))))[1], self.e_count, name = "e_accuracy")
+			self.h_accuracy = tf.divide(tf.shape(tf.sets.set_intersection(tf.transpose(tf.where(tf.equal(tf.argmax(self.y,1), 0))), (tf.transpose(tf.where(tf.equal(tf.argmax(self.tf_layers[self.layer_count - 1],1), 0))))))[1], self.h_count, name = "h_accuracy")
+			self.c_accuracy = tf.divide(tf.shape(tf.sets.set_intersection(tf.transpose(tf.where(tf.equal(tf.argmax(self.y,1), 1))), (tf.transpose(tf.where(tf.equal(tf.argmax(self.tf_layers[self.layer_count - 1],1), 1))))))[1], self.c_count, name = "c_accuracy")
+			self.e_accuracy = tf.divide(tf.shape(tf.sets.set_intersection(tf.transpose(tf.where(tf.equal(tf.argmax(self.y,1), 2))), (tf.transpose(tf.where(tf.equal(tf.argmax(self.tf_layers[self.layer_count - 1],1), 2))))))[1], self.e_count, name = "e_accuracy")
 			self.global_step = tf.Variable(0, name='global_step', trainable=False)
-			self.loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(labels=self.y, logits=self.y_p), name="loss")
+			self.loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(labels=self.y, logits=self.tf_layers[self.layer_count - 1]), name="loss")
 			
 #			self.train_step = tf.train.MomentumOptimizer(learning_rate=self.learning_rate, momentum=self.momentum_val, name="train_step").minimize(self.loss, global_step=self.global_step)
 			self.train_step = self.init_optimizer().minimize(self.loss, global_step = self.global_step)
@@ -114,7 +116,10 @@ class nw1:
 			
 			self.sess = tf.Session(graph = self.g)
 			self.sess.run(self.init_op)
-	
+			self.saver.save(self.sess, (self.output_directory + '/save/' + self.name), global_step=self.global_step)
+			self.saver.export_meta_graph(self.output_directory + '/save/' + self.name + "_meta")
+			tf.summary.FileWriter(self.output_directory + '/save/' + self.name).add_graph(self.g)
+			#python -m tensorflow.tensorboard --logdir="C:\Users\Dennis\Desktop\test\test_afs\save\"
 	def restore_graph(self, checkpoint):
 		with self.g.as_default():
 			print(self.sess.run(self.b_p))
@@ -136,7 +141,8 @@ class nw1:
 		
 	def train(self, training_file):
 		
-		self.prot_it = ProtFileParser(training_file, self.prot_directory)
+#		self.prot_it = Input_Handler(self., data_file_base_name, ttv_file, index, max_prot_length, cnn_bool, window_size, prot_name_file)
+
 		with self.g.as_default():
 			if self.restored_graph:
 				loss_val, accuracy_eval, h_acc, c_acc, e_acc = self.sess.run([self.loss, self.accuracy, self.h_accuracy, self.c_accuracy, self.e_accuracy], feed_dict={self.x: self.prot_it.test_set, self.y: self.prot_it.test_set_o, self.keep_prob: 1})
@@ -193,7 +199,7 @@ class nw1:
 	def predict(self, test_file):
 		base = os.path.splitext(os.path.split(test_file)[1])[0]
 		with self.g.as_default():
-			prediction = tf.argmax(self.y_p, 1)
+			prediction = tf.argmax(self.tf_layers[self.layer_count - 1], 1)
 
 			hce_counts = np.zeros(3, dtype = float)
 			hce_matches = np.zeros(3, dtype = float)
@@ -244,20 +250,44 @@ class nw1:
 
 #		self.training_file = configs["training_file"]
 #		self.test_file = configs["test_file"]
-		self.prot_directory = configs["protein_directory"]
-		self.output_directory = configs["output_directory"]
-		self.name = configs["name"]
-		self.learning_rate = configs["learning_rate"]
-		self.batch_size = configs["batch_size"]
-		self.steps = configs["max_steps"]
-		self.keep_prob_val = configs["keep_prob"]
-		self.momentum_val = configs["momentum"]
+		self.output_directory = configs.get("output_directory")
+		self.name = configs.get("name")
+		self.learning_rate = configs.get("learning_rate")
+		self.batch_size = configs.get("batch_size")
+		self.steps = configs.get("max_steps")
+		self.keep_prob_val = configs.get("keep_prob")
+		self.momentum_val = configs.get("momentum")
+		self.optimizer = configs.get("optimizer")
+		self.max_prot_length = configs.get("max_prot_length")
+		self.features = configs.get("features")
+		self.ss_features = configs.get("ss_features")
+		self.cnn_bool = configs.get("cnn_bool")
+		self.window_size = configs.get("window_size")
+		
+		# dir where input npys are
+		self.input_directory = configs.get("input_directory")
+		# "psi_prots"|"cull_pdb" -> .matrix.npy and .one_hots.npy will be appended
+		self.file_base = configs.get("data_file_base_name")
+		# ttv_file of ttvs: "ttv_dir + psi_" + validation --> ttv_file = "psi_"
+		self.ttv_file = configs.get("ttv_file")
+		# index of ttv_file: e.g. 2 for train2, test2, validation2 etc.
+		self.index = configs.get("index")
+		self.data_normalization_function = configs.get("data_normalization_function")
+		
 #		self.checkpoint = configs["checkpoint"]
 #		self.meta_graph = configs["meta_graph"]
 #		self.train = configs["train"]
 #		self.predict = configs["predict"]
-		self.layers = configs["parsed_layers"]
-		self.tf_layers = []
+		self.layers = configs.get("parsed_layers")
+		self.layer_count = len(self.layers)
+		print("number of layers: " + str(self.layer_count))
+		
+		if self.layers[len(self.layers) - 1].window_size != self.ss_features:
+			print("Error: output_channels unequal ss_features")
+			print(str(self.layers[len(self.layers) - 1].output_channels) + " != " + str(self.ss_features))
+			sys.exit()
+		
+		self.tf_layers = list()
 		self.output_directory = self.output_directory + "/" + self.name + "/"
 		if not os.path.exists(self.output_directory):
 			os.makedirs(self.output_directory)
@@ -280,9 +310,10 @@ class nw1:
 		self.build_graph()
 		
 def main(argv):
-	config_file = argv[0]
+#	config_file = argv[0]
+	config_file = "C:/Users/Dennis/Desktop/mut_config.txt"
 	print(config_file)
-	netw = nw1(config_file, None)
+	netw = mutable_network(config_file)
 
 if __name__ == "__main__":
 	main(sys.argv[1:])

@@ -24,6 +24,8 @@ def iterate(config_file):
     ## file where unique names are written to
     save_file = configs["short_name_file"]
     name = configs["base_name"]
+    features = configs["features"]
+    ss_features = configs["ss_features"]
     learning_rates = configs["learning_rates"]
     batch_sizes = configs["batch_sizes"]
     steps = configs["max_steps"]
@@ -61,7 +63,7 @@ def generate_random_short_name(output_directory, save_file, real_name):
     os.rename(config_file, output_directory + "/" + short_name + "/" + "configs.config")
     return config_file, short_name
 
-def write_nw_config_file(output_directory, prot_directory, save_file, window_size, layer, keep_prob, learning_rate, batch_size, max_steps, optimizer, momentum_val, nw_name):
+def write_nw_config_file(output_directory, prot_directory, save_file, features, ss_features, window_size, layer, keep_prob, learning_rate, batch_size, max_steps, optimizer, momentum_val, nw_name):
     real_name = ""
     config_file, short_name = generate_random_short_name(output_directory, save_file, real_name)
     with open(config_file, 'w') as conf:
@@ -69,6 +71,8 @@ def write_nw_config_file(output_directory, prot_directory, save_file, window_siz
         conf.write("name" + "\t" + short_name + "\tstr\n")
         conf.write("output_directory" + "\t" + output_directory + "/" + short_name + "\tstr\n")
         conf.write("protein_directory" + "\t" + prot_directory + "\tstr\n")
+        conf.write("features" + "\t" + features + "\tint\n")
+        conf.write("ss_features" + "\t" + ss_features + "\tint\n")
         conf.write("learning_rate" + "\t" + learning_rate + "\tfloat\n")
         conf.write("keep_prob" + "\t" + keep_prob + "\tfloat\n")
         conf.write("batch_size" + "\t" + batch_size + "\tint\n")

@@ -1,12 +1,12 @@
 import os
 import sys
 
-from convolution.input import CNN_Inputparser
 import matplotlib.pyplot as plt
 import numpy as np
 from parser1 import InputParser
 import tensorflow as tf
 from utils.ConfigFileParser import Configurations
+from utils.InputHandler import Input_Handler
 
 
 def conv1d(x, neurons, name_val):
@@ -130,25 +130,30 @@ class CNN():
         print("ckpt: " + self.ckpt)
         self.restore_graph(self.ckpt)
         
-    def train(self, training_file):
+    def train(self):
         
-        self.prot_it = CNN_Inputparser(training_file, self.prot_directory, self.max_prot_length)
+#        self.prot_it = CNN_Inputparser(training_file, self.prot_directory, self.max_prot_length)
+        self.prot_it = Input_Handler("D:/Dennis/Uni/bachelor/data/prot_data/psi_prot_name_files/dat_files/", "psi_prots", "D:/Dennis/Uni/bachelor/data/prot_data/psi_prot_name_files/dat_files/", 1, self.max_prot_length, True, 11, "", None)
+        
+        self.val_batch, self.val_batch_o, self.val_batch_l = self.prot_it.val_batches()
+        
         with self.g.as_default():
             if self.restored_graph:
-                loss_val, accuracy_eval = self.sess.run([self.loss, self.accuracy], feed_dict={self.x: self.prot_it.test_set, self.y: self.prot_it.test_set_o, self.keep_prob: 1})
+                loss_val, accuracy_eval = self.sess.run([self.loss, self.accuracy], feed_dict={self.x: self.val_batch, self.y: self.val_batch_o, self.prot_lengths: self.val_batch_l, self.keep_prob: 1})
                 self.winner_acc = accuracy_eval
                 self.winner_loss = loss_val            
 
             batch_count = 0
             for step in range(self.start_index, self.start_index + self.steps):
                 if step % 1 == 0:
-                    loss_val, accuracy_eval, p, o, mat = self.sess.run([self.loss, self.accuracy, self.masked_y_o, self.masked_y, self.mat], feed_dict={self.x: self.prot_it.test_set, self.y: self.prot_it.test_set_o, self.prot_lengths: self.prot_it.test_set_l, self.keep_prob: 1})
+                    train_batch, train_batch_o, train_batch_l = self.prot_it.next_prots(self.batch_size)
+                    loss_val, accuracy_eval, p, o, mat = self.sess.run([self.loss, self.accuracy, self.masked_y_o, self.masked_y, self.mat], feed_dict={self.x: train_batch, self.y: train_batch_o, self.prot_lengths: train_batch_l, self.keep_prob: 1})
                     print('Step %d: eval_accuracy = %.3f loss = %.3f' % (step, accuracy_eval, loss_val))
                     print(p[4])
                     print(o[4])
                     print(mat[4])
 #                    print("next")
-#                    fail=np.sum(np.isnan(mat))
+#                    fail=np.sum( np.isnan(mat))
 #                    if fail > 0:
 #                        print(mat)
 #                        print(log_yo)
@@ -168,7 +173,7 @@ class CNN():
                 batch_count += 1
         
             self.saver.save(self.sess, (self.output_directory + '/save/' + self.name), global_step=self.global_step)
-            loss_val, accuracy_eval = self.sess.run([self.loss, self.accuracy], feed_dict={self.x: self.prot_it.test_set, self.y: self.prot_it.test_set_o, self.prot_lengths: self.prot_it.test_set_l, self.keep_prob: 1})
+            loss_val, accuracy_eval = self.sess.run([self.loss, self.accuracy], feed_dict={self.x: self.val_batch, self.y: self.val_batch_o, self.prot_lengths: self.val_batch_l, self.keep_prob: 1})
             print('Step %d: eval_accuracy = %.3f loss = %.3f' % (step, accuracy_eval, loss_val))
 
             print("training finished")
@@ -227,7 +232,7 @@ class CNN():
 
 #        self.training_file = configs["training_file"]
 #        self.test_file = configs["test_file"]
-        self.prot_directory = configs["protein_directory"]
+#        self.prot_directory = configs["protein_directory"]
         self.output_directory = configs["output_directory"]
         self.name = configs["name"]
         self.learning_rate = configs["learning_rate"]
@@ -266,10 +271,11 @@ class CNN():
         self.build_graph()
         
 def main(argv):
-    config_file = argv[0]
+#    config_file = argv[0]
+    config_file = "C:/Users/Dennis/Desktop/mut_config.txt"
     print(config_file)
     cnn = CNN(config_file)
-    cnn.train("/home/p/postd/bachelor/data/tdbdata/train1.lst")
+    cnn.train()
 
 if __name__ == "__main__":
     main(sys.argv[1:])
