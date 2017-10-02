@@ -16,7 +16,8 @@ def read_aa_seq_file(aa_seq_file):
     aa_seq = ""
     with open(aa_seq_file) as aa:
         for line in aa:
-            aa_seq += line.strip()
+            if line.startswith(">"):
+                aa_seq += line.strip()
     return parse_aa_seq(aa_seq)
 
 def read_prot_file(prot_file, input_prot_dir):
@@ -24,7 +25,7 @@ def read_prot_file(prot_file, input_prot_dir):
     with open(prot_file) as prot_f:
         for line in prot_f: 
             line = line.strip()
-            aa_seq = read_aa_seq_file(input_prot_dir + "/" + line +"/" + line + ".aa_sequence")
+            aa_seq = read_aa_seq_file(input_prot_dir + "/" + line +"/" + line + ".fasta")
             ret.append(aa_seq)
     return np.array(ret)
     
