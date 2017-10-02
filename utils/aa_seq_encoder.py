@@ -6,6 +6,7 @@ def parse_aa_seq(aa_seq, aa_indices):
     aa_ind = aa_ind.fill(20)
     print(aa_seq)
     for i in range(len(aa_seq)):
+        print(aa_indices[aa_seq[i]])
         aa_ind[i] = aa_indices[aa_seq[i]]
         
     print(aa_ind)
