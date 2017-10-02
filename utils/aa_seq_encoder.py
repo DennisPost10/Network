@@ -6,6 +6,7 @@ def parse_aa_seq(aa_seq, aa_indices):
     aa_ind = aa_ind.fill(20)
     print(aa_seq)
     for i in range(len(aa_seq)):
+        print(i)
         print(aa_indices[aa_seq[i]])
         aa_ind[i] = aa_indices[aa_seq[i]]
         
@@ -26,7 +27,7 @@ def read_prot_file(prot_file, input_prot_dir, aa_indices):
     with open(prot_file) as prot_f:
         for line in prot_f: 
             line = line.strip()
-            aa_seq = read_aa_seq_file(input_prot_dir + "/" + line +"/" + line + ".fasta", aa_indices)
+            aa_seq = read_aa_seq_file(input_prot_dir + "/" + line + "/" + line + ".fasta", aa_indices)
             ret.append(aa_seq)
     return np.array(ret)
     
