@@ -16,7 +16,7 @@ def read_aa_seq_file(aa_seq_file):
     aa_seq = ""
     with open(aa_seq_file) as aa:
         for line in aa:
-            if line.startswith(">"):
+            if not line.startswith(">"):
                 aa_seq += line.strip()
     return parse_aa_seq(aa_seq)
 
