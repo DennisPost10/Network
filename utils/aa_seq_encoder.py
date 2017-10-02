@@ -2,12 +2,10 @@ import sys
 import numpy as np
 
 def parse_aa_seq(aa_seq, aa_indices):
-    aa_ind = np.array(len(aa_seq), dtype = int)
-    aa_ind = aa_ind.fill(20)
+    aa_ind = np.empty([len(aa_seq)], dtype = int)
+    aa_ind.fill(20)
     print(aa_seq)
     for i in range(len(aa_seq)):
-        print(i)
-        print(aa_indices[aa_seq[i]])
         aa_ind[i] = aa_indices[aa_seq[i]]
         
     print(aa_ind)
