@@ -20,11 +20,11 @@ class Input_Handler:
             
         else:
             return data
-            
-    def reformat_data(self, data, ss_data, indices, features, ss_features, max_length, window_size, cnn_bool):
+        
+    def reformat_data(self, data, ss_data, indices, features, ss_features, max_length, window_size):
         data = np.take(data, indices, 0)
         ss_data = np.take(ss_data, indices, 0)
-        if cnn_bool:
+        if self.network_type == "conv":
             full_data = np.zeros(shape=[data.shape[0], max_length, features], dtype = data.dtype)
             full_ss = np.zeros(shape=[ss_data.shape[0], max_length, ss_features], dtype = ss_data.dtype)
             for i in range(len(data)):
@@ -43,17 +43,17 @@ class Input_Handler:
             full_ss = ss_data
         return full_data, full_ss
 
-    def get_lengths(self, data, index_vec, max_length, cnn_bool):
+    def get_lengths(self, data, index_vec, max_length):
         # returns everything if max_length <= 0
         lengths = []
         too_big = []
         for i in range(len(index_vec)):
-            if max_length > 0 and cnn_bool and len(data[index_vec[i]]) > max_length:
+            if max_length > 0 and self.network_type == "conv" and len(data[index_vec[i]]) > max_length:
                 too_big.append(i)
             else:
                 lengths.append(len(data[index_vec[i]]))
         return np.array(lengths), np.array(too_big)
-        
+    
     def load_data(self):
         
         self.dat = self.read_npy_file(self.input_directory + "/" + self.file_base + ".matrix.npy")
@@ -64,9 +64,9 @@ class Input_Handler:
         self.val = np.loadtxt(self.ttv_file + "validation" + str(self.index) + ".lst", delimiter = "\t", usecols = 1, dtype = int)
         self.test = np.loadtxt(self.ttv_file + "test" + str(self.index) + ".lst", delimiter = "\t", usecols = 1, dtype = int)
 
-        self.train_lengths, train_too_big = self.get_lengths(self.dat, self.train, self.max_prot_length, self.cnn_bool)
-        self.val_lengths, val_too_big = self.get_lengths(self.dat, self.val, self.max_prot_length, self.cnn_bool)
-        self.test_lengths, test_too_big = self.get_lengths(self.dat, self.test, self.max_prot_length, self.cnn_bool)       
+        self.train_lengths, train_too_big = self.get_lengths(self.dat, self.train, self.max_prot_length)
+        self.val_lengths, val_too_big = self.get_lengths(self.dat, self.val, self.max_prot_length)
+        self.test_lengths, test_too_big = self.get_lengths(self.dat, self.test, self.max_prot_length)       
 
         self.train = np.delete(self.train, train_too_big, 0)
         self.val = np.delete(self.val, val_too_big, 0)
@@ -77,9 +77,9 @@ class Input_Handler:
         self.ss_features = self.ss_dat[0].shape[1]
         print(self.ss_features)
 
-        self.train_dat, self.ss_train_dat = self.reformat_data(self.dat, self.ss_dat, self.train, self.features, self.ss_features, self.max_prot_length, self.window_size, self.cnn_bool)
-        self.val_dat, self.ss_val_dat = self.reformat_data(self.dat, self.ss_dat, self.val, self.features, self.ss_features, self.max_prot_length, self.window_size, self.cnn_bool)
-        self.test_dat, self.ss_test_dat = self.reformat_data(self.dat, self.ss_dat, self.test, self.features, self.ss_features, self.max_prot_length, self.window_size, self.cnn_bool)
+        self.train_dat, self.ss_train_dat = self.reformat_data(self.dat, self.ss_dat, self.train, self.features, self.ss_features, self.max_prot_length, self.window_size)
+        self.val_dat, self.ss_val_dat = self.reformat_data(self.dat, self.ss_dat, self.val, self.features, self.ss_features, self.max_prot_length, self.window_size)
+        self.test_dat, self.ss_test_dat = self.reformat_data(self.dat, self.ss_dat, self.test, self.features, self.ss_features, self.max_prot_length, self.window_size)
         
 #        self.train_dat = np.take(self.dat, self.train, 0)
 #        self.val_dat = np.take(self.dat, self.val, 0)
@@ -93,6 +93,24 @@ class Input_Handler:
         self.random_prot_rank = np.random.permutation(len(self.train_dat))
         self.index = 0
     
+    def load_single_file(self):
+        self.dat = self.read_npy_file(self.input_directory + "/" + self.file_base + ".matrix.npy")
+        self.dat = self.normalize_data(self.dat, self.data_normalization_function)
+        self.ss_dat = self.read_npy_file(self.input_directory + "/" + self.file_base + ".one_hots.npy")
+
+        self.train = np.loadtxt(self.ttv_file + "train" + str(self.index) + ".lst", delimiter = "\t", usecols = 1, dtype = int)
+        self.train_lengths, train_too_big = self.get_lengths(self.dat, self.train, self.max_prot_length)
+        self.train = np.delete(self.train, train_too_big, 0)
+    
+        self.features = self.dat[0].shape[1]
+        print(self.features)
+        self.ss_features = self.ss_dat[0].shape[1]
+        print(self.ss_features)
+    
+        self.train_dat, self.ss_train_dat = self.reformat_data(self.dat, self.ss_dat, self.train, self.features, self.ss_features, self.max_prot_length, self.window_size)
+    
+        return self.val_dat, self.ss_val_dat, self.val_lengths
+    
     def val_batches(self):
         return self.val_dat, self.ss_val_dat, self.val_lengths
     
@@ -100,8 +118,10 @@ class Input_Handler:
         return self.test_dat, self.ss_test_dat, self.test_lengths
     
     def next_prots(self, size):
-        if self.cnn_bool:
+        if self.network_type == "conv":
             return self.next_prots_cnn(size)
+        elif self.network_type == "mixed":
+            return self.next_prots_mixed(size)
         return self.next_prots_not_cnn(size)
     
     def next_prots_cnn(self, size):
@@ -148,13 +168,40 @@ class Input_Handler:
             
         return ret_windows, ret_ss, None
     
-    def __init__(self, input_directory, data_file_base_name, ttv_file, index, max_prot_length, cnn_bool, window_size, data_normalization_function, prot_name_file = None):
+    def next_prots_mixed(self, size):
+        
+        total_pull = 0
+        ret_windows = np.empty(shape=[size, self.window_size, self.features], dtype = self.train_dat.dtype)
+        ret_ss = np.empty(shape=[size, self.ss_features], dtype = self.ss_train_dat.dtype)
+
+        while total_pull < size:
+            if self.index == self.train_lengths[self.prot_index]:
+                self.index = 0
+                self.prot_index += 1
+                if self.prot_index == len(self.train_dat):
+                    self.prot_index = 0
+                    self.random_prot_rank = np.random.permutation(len(self.train_dat))
+
+            rows_left = self.train_lengths[self.prot_index] - self.index
+            next_pull = min(rows_left, size - total_pull)
+            for i in range(next_pull):
+                ret_windows[i + total_pull] = self.train_dat[self.prot_index][self.index:(self.index + self.window_size)]
+                ret_ss[i + total_pull] = self.ss_train_dat[self.prot_index][self.index]
+                self.index += 1
+            total_pull += next_pull
+
+#            if total_pull >= size:
+#                break
+            
+        return ret_windows, ret_ss, None
+    
+    def __init__(self, input_directory, data_file_base_name, ttv_file, index, max_prot_length, network_type, window_size, data_normalization_function, prot_name_file = None):
         self.input_directory = input_directory # dir where input npys are
         self.file_base = data_file_base_name # "psi_prots"|"cull_pdb" -> .matrix.npy and .one_hots.npy will be appended
         self.ttv_file = ttv_file # ttv_file of ttvs: "ttv_dir + psi_" + validation --> ttv_file = "psi_"
         self.index = index # index of ttv_file: e.g. 2 for train2, test2, validation2 etc.
         self.max_prot_length = max_prot_length
-        self.cnn_bool = cnn_bool
+        self.network_type = network_type
         self.window_size = window_size
         self.data_normalization_function = data_normalization_function
         self.load_data()

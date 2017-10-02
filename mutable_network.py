@@ -3,7 +3,6 @@ import sys
 
 import matplotlib.pyplot as plt
 import numpy as np
-from parser1 import InputParser
 import tensorflow as tf
 from utils.Layer import Layer
 from utils.ConfigFileParser import Configurations
@@ -80,13 +79,21 @@ class mutable_network:
 		with self.g.as_default():
 			self.keep_prob = tf.placeholder(tf.float32, name="keep_prob")
 			
-			if self.cnn_bool:
+			if self.network_type == "conv":
 				# input
 				self.x = tf.placeholder(tf.float32, [None, self.max_prot_length, self.features], name="x")
 				# final output
 				self.y = tf.placeholder(tf.float32, [None, self.max_prot_length, self.ss_features], name="y")
 			
 				self.layer(Layer("x", "", False, self.features, self.max_prot_length), self.x, 0)
+			
+			elif self.network_type == "mixed":
+				# input
+				self.x = tf.placeholder(tf.float32, [None, self.window_size, self.features], name="x")
+				# final output
+				self.y = tf.placeholder(tf.float32, [None, self.ss_features], name="y")
+			
+				self.layer(Layer("x", "", False, self.features, self.window_size), self.x, 0) #!!!!!!
 			
 			else:
 				# input
@@ -139,13 +146,15 @@ class mutable_network:
 		print("ckpt: " + self.ckpt)
 		self.restore_graph(self.ckpt)
 		
-	def train(self, training_file):
+	def train(self):
 		
-#		self.prot_it = Input_Handler(self., data_file_base_name, ttv_file, index, max_prot_length, cnn_bool, window_size, prot_name_file)
+		self.prot_it = Input_Handler(self.input_directory, self.data_file_base_name, self.ttv_file, self.index, self.max_prot_length, self.network_type, self.window_size)
+
+		self.val_batch, self.val_batch_o, self.val_batch_l = self.prot_it.val_batches()
 
 		with self.g.as_default():
 			if self.restored_graph:
-				loss_val, accuracy_eval, h_acc, c_acc, e_acc = self.sess.run([self.loss, self.accuracy, self.h_accuracy, self.c_accuracy, self.e_accuracy], feed_dict={self.x: self.prot_it.test_set, self.y: self.prot_it.test_set_o, self.keep_prob: 1})
+				loss_val, accuracy_eval, h_acc, c_acc, e_acc = self.sess.run([self.loss, self.accuracy, self.h_accuracy, self.c_accuracy, self.e_accuracy], feed_dict={self.x: self.val_batch, self.y: self.val_batch_o, self.prot_lengths: self.val_batch_l, self.keep_prob: 1})
 				self.winner_acc = accuracy_eval
 				self.winner_loss = loss_val
 			
@@ -167,7 +176,7 @@ class mutable_network:
 			
 			for step in range(self.start_index, self.start_index + self.steps):
 				if step % check_range == 0:
-					summarystr, loss_val, accuracy_eval, h_acc, c_acc, e_acc = self.sess.run([summary, self.loss, self.accuracy, self.h_accuracy, self.c_accuracy, self.e_accuracy], feed_dict={self.x: self.prot_it.test_set, self.y: self.prot_it.test_set_o, self.keep_prob: 1})
+					summarystr, loss_val, accuracy_eval, h_acc, c_acc, e_acc = self.sess.run([summary, self.loss, self.accuracy, self.h_accuracy, self.c_accuracy, self.e_accuracy], feed_dict={self.x: self.val_batch, self.y: self.val_batch_o, self.prot_lengths: self.val_batch_l, self.keep_prob: 1})
 					if(accuracy_eval - lower_acc > alpha or loss_val - lower_loss < alpha):
 						self.winner_acc = max(self.winner_acc, accuracy_eval)
 						self.winner_loss = min(self.winner_loss, loss_val)
@@ -185,8 +194,8 @@ class mutable_network:
 							print("finished early")
 							return
 				
-				self.prot_it.next_batch(self.batch_size)
-				_ = self.sess.run(self.train_step, feed_dict={self.x: self.prot_it.next_batch_w, self.y: self.prot_it.next_batch_o, self.keep_prob: self.keep_prob_val})
+				ret_prots, ret_prots_o, lengths = self.prot_it.next_prots(self.batch_size)
+				_ = self.sess.run(self.train_step, feed_dict={self.x: ret_prots, self.y: ret_prots_o, self.keep_prob: self.keep_prob_val, self.prot_lengths: lengths})
 				batch_count += 1
 		
 			self.saver.save(self.sess, (self.output_directory + '/save/' + self.name), global_step=self.global_step)
@@ -212,7 +221,7 @@ class mutable_network:
 				for prot in prots:
 					prot = prot.strip()
 					print(prot)
-					next_prot = InputParser(self.prot_directory, prot)
+					next_prot = Input_Handler(self.prot_directory, prot)
 					prot_nw_dir = self.prot_directory + "/" + prot + "/" + self.name + "/"
 					if not os.path.exists(prot_nw_dir):
 						os.makedirs(prot_nw_dir)
@@ -261,7 +270,8 @@ class mutable_network:
 		self.max_prot_length = configs.get("max_prot_length")
 		self.features = configs.get("features")
 		self.ss_features = configs.get("ss_features")
-		self.cnn_bool = configs.get("cnn_bool")
+		self.network_type = configs.get("network_type")
+		
 		self.window_size = configs.get("window_size")
 		
 		# dir where input npys are
