@@ -3,7 +3,7 @@ import numpy as np
 
 def parse_aa_seq(aa_seq, aa_indices):
     aa_ind = np.empty([len(aa_seq)], dtype = int)
-    aa_ind.fill(20)
+    aa_ind.fill(22)
     print(aa_seq)
     for i in range(len(aa_seq)):
         aa_ind[i] = aa_indices[aa_seq[i]]
@@ -41,7 +41,7 @@ def main(argv):
     input_prot_dir = argv[1]
     output_file = argv[2]
     print(argv)
-    aa_indices = {"A":0, "R":1, "N":2, "D":3, "C":4, "Q":5, "E":6, "G":7, "H":8, "I":9, "L":10, "K":11, "M":12, "F":13, "P":14, "S":15, "T":16, "W":17, "Y":18, "V":19, "-":20, "X":20}
+    aa_indices = {"A":0, "R":1, "N":2, "D":3, "C":4, "Q":5, "E":6, "G":7, "H":8, "I":9, "L":10, "K":11, "M":12, "F":13, "P":14, "S":15, "T":16, "W":17, "Y":18, "V":19, "B":20, "U":21, "Z":21, "-":22, "X":22}
     get_encoded_aa_seq(prot_file, input_prot_dir, output_file, aa_indices)
         
     

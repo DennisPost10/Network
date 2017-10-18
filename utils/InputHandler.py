@@ -97,6 +97,9 @@ class Input_Handler:
         self.dat = self.read_npy_file(self.input_directory + "/" + self.file_base + ".matrix.npy")
         self.dat = self.normalize_data(self.dat, self.data_normalization_function)
         self.ss_dat = self.read_npy_file(self.input_directory + "/" + self.file_base + ".one_hots.npy")
+        if self.load_aa_seq:
+            self.aa_seq = self.read_npy_file(self.input_directory + "/" + self.file_base + ".aa_encodings")
+            self.aa_seq = self.parse_aa_encoding(self.aa_seq)
 
         self.train = np.loadtxt(self.ttv_file + "train" + str(self.index) + ".lst", delimiter = "\t", usecols = 1, dtype = int)
         self.train_lengths, train_too_big = self.get_lengths(self.dat, self.train, self.max_prot_length)
@@ -195,7 +198,7 @@ class Input_Handler:
             
         return ret_windows, ret_ss, None
     
-    def __init__(self, input_directory, data_file_base_name, ttv_file, index, max_prot_length, network_type, window_size, data_normalization_function, prot_name_file = None):
+    def __init__(self, input_directory, data_file_base_name, ttv_file, index, max_prot_length, network_type, window_size, data_normalization_function, load_aa_seq = False):
         self.input_directory = input_directory # dir where input npys are
         self.file_base = data_file_base_name # "psi_prots"|"cull_pdb" -> .matrix.npy and .one_hots.npy will be appended
         self.ttv_file = ttv_file # ttv_file of ttvs: "ttv_dir + psi_" + validation --> ttv_file = "psi_"
@@ -205,6 +208,7 @@ class Input_Handler:
         self.window_size = window_size
         self.data_normalization_function = data_normalization_function
         self.load_data()
+        self.load_aa_seq = load_aa_seq
     
 def main(argv):
     netw = Input_Handler("D:/Dennis/Uni/bachelor/data/prot_data/cull_prot_name_files/dat_files/", "cull_pdb_prots", "D:/Dennis/Uni/bachelor/data/prot_data/cull_prot_name_files/dat_files/", 1, 700, True, -1, "nothing")
