@@ -39,17 +39,16 @@ class mutable_network:
 	def init_optimizer(self):
 		if self.optimizer == "adam":
 			return tf.train.AdamOptimizer(self.learning_rate)
+		elif self.optimizer == "adagrad":
+			return tf.train.AdagradOptimizer(self.learning_rate)
+		elif self.optimizer == "momentum":
+			return tf.train.MomentumOptimizer(self.learning_rate, self.momentum_val)
+		elif self.optimizer == "gradient":
+			return tf.train.GradientDescentOptimizer(self.learning_rate)
+		elif self.optimizer == "adadelta":
+			return tf.train.AdadeltaOptimizer(self.learning_rate)
 		else:
-			if self.optimizer == "adagrad":
-				return tf.train.AdagradOptimizer(self.learning_rate)
-			elif self.optimizer == "momentum":
-				return tf.train.MomentumOptimizer(self.learning_rate, self.momentum_val)
-			elif self.optimizer == "gradient":
-				return tf.train.GradientDescentOptimizer(self.learning_rate)
-			elif self.optimizer == "adadelta":
-				return tf.train.AdadeltaOptimizer(self.learning_rate)
-			else:
-				return None
+			return None
 
 	def layer(self, input_layer, input_tf_layer, layer_count):
 		if layer_count >= len(self.layers):
@@ -81,27 +80,36 @@ class mutable_network:
 			
 			if self.network_type == "conv":
 				# input
-				self.x = tf.placeholder(tf.float32, [None, self.max_prot_length, self.features], name="x")
+				self.x = tf.placeholder(tf.float32, [None, self.max_prot_length, self.features + self.aa_seq_add], name="x")
+				
 				# final output
 				self.y = tf.placeholder(tf.float32, [None, self.max_prot_length, self.ss_features], name="y")
 			
-				self.layer(Layer("x", "", False, self.features, self.max_prot_length), self.x, 0)
+				self.layer(Layer("x", "", False, self.features + self.aa_seq_add, self.max_prot_length), self.x, 0)
 			
 			elif self.network_type == "mixed":
 				# input
-				self.x = tf.placeholder(tf.float32, [None, self.window_size, self.features], name="x")
+				self.x = tf.placeholder(tf.float32, [None, self.window_size, self.features + self.aa_seq_add], name="x")
 				# final output
 				self.y = tf.placeholder(tf.float32, [None, self.ss_features], name="y")
 			
-				self.layer(Layer("x", "", False, self.features, self.window_size), self.x, 0) #!!!!!!
+				self.layer(Layer("x", "", False, self.features + self.aa_seq_add, self.window_size), self.x, 0) #!!!!!!
 			
 			else:
 				# input
-				self.x = tf.placeholder(tf.float32, [None, self.window_size * self.features], name="x")
+				if self.single_aa_seq:
+					self.x = tf.placeholder(tf.float32, [None, self.window_size * self.features + self.aa_seq_add], name="x")				
+				else:
+					self.x = tf.placeholder(tf.float32, [None, self.window_size * (self.features + self.aa_seq_add)], name="x")
+					
 				# final output
 				self.y = tf.placeholder(tf.float32, [None, self.ss_features], name="y")
 
-				self.layer(Layer("x", "", False, 1, self.window_size * self.features), self.x, 0)
+				if self.single_aa_seq:
+					self.layer(Layer("x", "", False, 1, self.window_size * self.features + self.aa_seq_add), self.x, 0)
+				else:
+					self.layer(Layer("x", "", False, 1, self.window_size * (self.features + self.aa_seq_add)), self.x, 0)
+					
 
 			self.correct_prediction = tf.equal(tf.argmax(self.tf_layers[self.layer_count - 1], 1), tf.argmax(self.y, 1), name="correct_prediction")
 			self.accuracy = tf.reduce_mean(tf.cast(self.correct_prediction, tf.float32), name="accuracy")
@@ -186,7 +194,7 @@ class mutable_network:
 						self.saver.save(self.sess, (self.output_directory + '/save/' + self.name), global_step=self.global_step)
 #				if step % 1000 == 0:
 						print('Step %d: eval_accuracy = %.3f loss = %.3f H: %.3f C: %.3f E: %.3f (%d)' % (step, accuracy_eval, loss_val, h_acc, c_acc, e_acc, batch_count))
-						summary_writer.add_summary(summarystr, step)			
+						summary_writer.add_summary(summarystr, step)		
 #					if step % 10000 == 0:
 						if better:
 							better = False
@@ -271,6 +279,12 @@ class mutable_network:
 		self.features = configs.get("features")
 		self.ss_features = configs.get("ss_features")
 		self.network_type = configs.get("network_type")
+		
+		self.use_aa_seq_data = configs.get("use_aa_seq_data")
+		self.aa_codes = configs.get("aa_codes")
+		self.aa_seq_add = self.aa_codes
+		if not self.use_aa_seq_data:
+			self.aa_seq_add = 0
 		
 		self.window_size = configs.get("window_size")
 		

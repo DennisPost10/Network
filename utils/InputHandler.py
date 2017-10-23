@@ -24,12 +24,12 @@ class Input_Handler:
     def reformat_data(self, data, ss_data, aa_seq_data, indices, features, ss_features, max_length, window_size):
         data = np.take(data, indices, 0)
         ss_data = np.take(ss_data, indices, 0)
-        aa_seq_add = 0
+        self.aa_seq_add = 0
         if self.load_aa_seq:
             aa_seq_data = np.take(aa_seq_data, indices, 0)
-            aa_seq_add = self.aa_codes
+            self.aa_seq_add = self.aa_codes
         if self.network_type == "conv":
-            full_data = np.zeros(shape=[data.shape[0], max_length, features + aa_seq_add], dtype = data.dtype)
+            full_data = np.zeros(shape=[data.shape[0], max_length, features + self.aa_seq_add], dtype = data.dtype)
             full_ss = np.zeros(shape=[ss_data.shape[0], max_length, ss_features], dtype = ss_data.dtype)
             for i in range(len(data)):
                 full_data[i][:data[i].shape[0], :features] = data[i]
@@ -40,29 +40,19 @@ class Input_Handler:
             print(data.shape)
         
         else:
-            h_w = int(window_size / 2)
+            self.h_w = int(window_size / 2)
             full_data = []
             for i in range(len(data)):
                 a = data[i]
-                b = np.zeros(shape=[a.shape[0] + 2 * h_w, a.shape[1] + aa_seq_add], dtype = data.dtype)
-                b[h_w:a.shape[0] + h_w, :a.shape[1]] = a
+                b = np.zeros(shape=[a.shape[0] + 2 * self.h_w, a.shape[1] + self.aa_seq_add], dtype = data.dtype)
+                b[self.h_w:a.shape[0] + self.h_w, :a.shape[1]] = a
                 if self.load_aa_seq:
                     for j in range(len(a)):
-                        b[h_w + j][features + aa_seq_data[i][j]] = 1
+                        b[self.h_w + j][features + aa_seq_data[i][j]] = 1
                 full_data.append(b)
             full_data = np.array(full_data)
             full_ss = ss_data 
-        
-#        else:
-#            h_w = int(window_size / 2)
-#            full_data = []
-#            for i in range(len(data)):
-#                a = data[i]
-#                b = np.zeros(shape=[a.shape[0] + 2 * h_w, a.shape[1]], dtype = data.dtype)
-#                b[h_w:a.shape[0] + h_w, :a.shape[1]] = a
-#                full_data.append(b)
-#            full_data = np.array(full_data)
-#            full_ss = ss_data
+
         return full_data, full_ss
 
     def get_lengths(self, data, index_vec, max_length):
@@ -82,6 +72,15 @@ class Input_Handler:
         self.dat = self.normalize_data(self.dat, self.data_normalization_function)
         self.ss_dat = self.read_npy_file(self.input_directory + "/" + self.file_base + ".one_hots.npy")
 
+        self.features = self.dat[0].shape[1]
+        print(self.features)
+        self.ss_features = self.ss_dat[0].shape[1]
+        print(self.ss_features)
+
+        self.aa_seq = None
+        if self.load_aa_seq:
+            self.aa_seq = self.read_npy_file(self.input_directory + "/" + self.file_base + ".aa_seq_codes")
+
         self.train = np.loadtxt(self.ttv_file + "train" + str(self.index) + ".lst", delimiter = "\t", usecols = 1, dtype = int)
         self.val = np.loadtxt(self.ttv_file + "validation" + str(self.index) + ".lst", delimiter = "\t", usecols = 1, dtype = int)
         self.test = np.loadtxt(self.ttv_file + "test" + str(self.index) + ".lst", delimiter = "\t", usecols = 1, dtype = int)
@@ -94,47 +93,36 @@ class Input_Handler:
         self.val = np.delete(self.val, val_too_big, 0)
         self.test = np.delete(self.test, test_too_big, 0)
 
-        self.features = self.dat[0].shape[1]
-        print(self.features)
-        self.ss_features = self.ss_dat[0].shape[1]
-        print(self.ss_features)
+        self.train_dat, self.ss_train_dat = self.reformat_data(self.dat, self.ss_dat, self.aa_seq, self.train, self.features, self.ss_features, self.max_prot_length, self.window_size)
+        self.val_dat, self.ss_val_dat = self.reformat_data(self.dat, self.ss_dat, self.aa_seq, self.val, self.features, self.ss_features, self.max_prot_length, self.window_size)
+        self.test_dat, self.ss_test_dat = self.reformat_data(self.dat, self.ss_dat, self.aa_seq, self.test, self.features, self.ss_features, self.max_prot_length, self.window_size)
 
-        self.train_dat, self.ss_train_dat = self.reformat_data(self.dat, self.ss_dat, self.train, self.features, self.ss_features, self.max_prot_length, self.window_size)
-        self.val_dat, self.ss_val_dat = self.reformat_data(self.dat, self.ss_dat, self.val, self.features, self.ss_features, self.max_prot_length, self.window_size)
-        self.test_dat, self.ss_test_dat = self.reformat_data(self.dat, self.ss_dat, self.test, self.features, self.ss_features, self.max_prot_length, self.window_size)
-        
-#        self.train_dat = np.take(self.dat, self.train, 0)
-#        self.val_dat = np.take(self.dat, self.val, 0)
-#        self.test_dat = np.take(self.dat, self.test, 0)
-        
-#        self.ss_train_dat = np.take(self.ss_dat, self.train, 0)
-#        self.ss_val_dat = np.take(self.ss_dat, self.val, 0)
-#        self.ss_test_dat = np.take(self.ss_dat, self.test, 0)
-        
         self.prot_index = 0
         self.random_prot_rank = np.random.permutation(len(self.train_dat))
         self.index = 0
     
-    def load_single_file(self):
+    def load_single_file(self, single_file):
         self.dat = self.read_npy_file(self.input_directory + "/" + self.file_base + ".matrix.npy")
         self.dat = self.normalize_data(self.dat, self.data_normalization_function)
         self.ss_dat = self.read_npy_file(self.input_directory + "/" + self.file_base + ".one_hots.npy")
-        if self.load_aa_seq:
-            self.aa_seq = self.read_npy_file(self.input_directory + "/" + self.file_base + ".aa_seq_codes")
-            self.aa_seq = self.parse_aa_encoding(self.aa_seq)
-
-        self.train = np.loadtxt(self.ttv_file + "train" + str(self.index) + ".lst", delimiter = "\t", usecols = 1, dtype = int)
-        self.train_lengths, train_too_big = self.get_lengths(self.dat, self.train, self.max_prot_length)
-        self.train = np.delete(self.train, train_too_big, 0)
-    
+        
         self.features = self.dat[0].shape[1]
         print(self.features)
         self.ss_features = self.ss_dat[0].shape[1]
         print(self.ss_features)
+
+        self.aa_seq = None
+        if self.load_aa_seq:
+            self.aa_seq = self.read_npy_file(self.input_directory + "/" + self.file_base + ".aa_seq_codes")
+
+        self.single_dat = np.loadtxt(self.ttv_file + single_file + str(self.index) + ".lst", delimiter = "\t", usecols = 1, dtype = int)
+        self.single_lengths, single_too_big = self.get_lengths(self.dat, self.single_dat, self.max_prot_length)
+        self.single_dat = np.delete(self.single_dat, single_too_big, 0)
+        
+        self.single_dat, self.ss_single_dat = self.reformat_data(self.dat, self.ss_dat, self.aa_seq, self.single_dat, self.features, self.ss_features, self.max_prot_length, self.window_size)
     
-        self.train_dat, self.ss_train_dat = self.reformat_data(self.dat, self.ss_dat, self.train, self.features, self.ss_features, self.max_prot_length, self.window_size)
+        return self.single_dat, self.ss_single_dat, self.single_lengths
     
-        return self.val_dat, self.ss_val_dat, self.val_lengths
     
     def val_batches(self):
         return self.val_dat, self.ss_val_dat, self.val_lengths
@@ -166,10 +154,13 @@ class Input_Handler:
             total_pull += next_pull
         return np.take(self.train_dat, ret_indices, 0), np.take(self.ss_train_dat, ret_indices, 0), np.take(self.train_lengths, ret_indices, 0)
         
-    def next_prots_not_cnn(self, size):
+    def next_prots_not_cnn(self, size, single_aa_seq = False):
         
         total_pull = 0
-        ret_windows = np.empty(shape=[size, self.window_size * self.features], dtype = self.train_dat.dtype)
+        if single_aa_seq:
+            ret_windows = np.empty(shape=[size, self.window_size * self.features + self.aa_seq_add], dtype = self.train_dat.dtype)
+        else:
+            ret_windows = np.empty(shape=[size, self.window_size * (self.features + self.aa_seq_add)], dtype = self.train_dat.dtype)
         ret_ss = np.empty(shape=[size, self.ss_features], dtype = self.ss_train_dat.dtype)
 
         while total_pull < size:
@@ -183,20 +174,23 @@ class Input_Handler:
             rows_left = self.train_lengths[self.prot_index] - self.index
             next_pull = min(rows_left, size - total_pull)
             for i in range(next_pull):
-                ret_windows[i + total_pull] = self.train_dat[self.prot_index][self.index:(self.index + self.window_size)].reshape(-1)
+                if single_aa_seq:
+                    window = np.empty(shape = [self.window_size * self.features + self.aa_seq_add], dtype = self.train_dat.dtype)
+                    window[0:self.window_size * self.features] = self.train_dat[self.prot_index][self.index:(self.index + self.window_size), 0:self.features].reshape(-1)
+                    window[self.window_size * self.features:] = self.train_dat[self.prot_index][self.index + self.h_w, self.features:]
+                    ret_windows[i + total_pull] = window
+                else:
+                    ret_windows[i + total_pull] = self.train_dat[self.prot_index][self.index:(self.index + self.window_size)].reshape(-1)
                 ret_ss[i + total_pull] = self.ss_train_dat[self.prot_index][self.index]
                 self.index += 1
             total_pull += next_pull
-
-#            if total_pull >= size:
-#                break
-            
+     
         return ret_windows, ret_ss, None
     
     def next_prots_mixed(self, size):
         
         total_pull = 0
-        ret_windows = np.empty(shape=[size, self.window_size, self.features], dtype = self.train_dat.dtype)
+        ret_windows = np.empty(shape=[size, self.window_size, self.features + self.aa_seq_add], dtype = self.train_dat.dtype)
         ret_ss = np.empty(shape=[size, self.ss_features], dtype = self.ss_train_dat.dtype)
 
         while total_pull < size:
@@ -214,10 +208,7 @@ class Input_Handler:
                 ret_ss[i + total_pull] = self.ss_train_dat[self.prot_index][self.index]
                 self.index += 1
             total_pull += next_pull
-
-#            if total_pull >= size:
-#                break
-            
+  
         return ret_windows, ret_ss, None
     
     def __init__(self, input_directory, data_file_base_name, ttv_file, index, max_prot_length, network_type, window_size, data_normalization_function, load_aa_seq = False, aa_codes = 23):
