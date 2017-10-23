@@ -32,7 +32,7 @@ def read_prot_file(prot_file, input_prot_dir, aa_indices):
 def get_encoded_aa_seq(prot_file, input_prot_dir, output_file, aa_indices):
     encoded_aa_seqs = read_prot_file(prot_file, input_prot_dir, aa_indices)
     np.save(output_file, encoded_aa_seqs)
-    
+        
 def main(argv):
     if len(argv) < 3:
         print("prot_file, input_dir, output_file")

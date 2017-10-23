@@ -21,26 +21,48 @@ class Input_Handler:
         else:
             return data
         
-    def reformat_data(self, data, ss_data, indices, features, ss_features, max_length, window_size):
+    def reformat_data(self, data, ss_data, aa_seq_data, indices, features, ss_features, max_length, window_size):
         data = np.take(data, indices, 0)
         ss_data = np.take(ss_data, indices, 0)
+        aa_seq_add = 0
+        if self.load_aa_seq:
+            aa_seq_data = np.take(aa_seq_data, indices, 0)
+            aa_seq_add = self.aa_codes
         if self.network_type == "conv":
-            full_data = np.zeros(shape=[data.shape[0], max_length, features], dtype = data.dtype)
+            full_data = np.zeros(shape=[data.shape[0], max_length, features + aa_seq_add], dtype = data.dtype)
             full_ss = np.zeros(shape=[ss_data.shape[0], max_length, ss_features], dtype = ss_data.dtype)
             for i in range(len(data)):
                 full_data[i][:data[i].shape[0], :features] = data[i]
                 full_ss[i][:ss_data[i].shape[0], :ss_features] = ss_data[i]
+                if self.load_aa_seq:
+                    for j in range(len(data[i])):
+                        full_data[i][j][features + aa_seq_data[i][j]] = 1
             print(data.shape)
+        
         else:
             h_w = int(window_size / 2)
             full_data = []
             for i in range(len(data)):
                 a = data[i]
-                b = np.zeros(shape=[a.shape[0] + 2 * h_w, a.shape[1]], dtype = data.dtype)            
+                b = np.zeros(shape=[a.shape[0] + 2 * h_w, a.shape[1] + aa_seq_add], dtype = data.dtype)
                 b[h_w:a.shape[0] + h_w, :a.shape[1]] = a
+                if self.load_aa_seq:
+                    for j in range(len(a)):
+                        b[h_w + j][features + aa_seq_data[i][j]] = 1
                 full_data.append(b)
             full_data = np.array(full_data)
-            full_ss = ss_data
+            full_ss = ss_data 
+        
+#        else:
+#            h_w = int(window_size / 2)
+#            full_data = []
+#            for i in range(len(data)):
+#                a = data[i]
+#                b = np.zeros(shape=[a.shape[0] + 2 * h_w, a.shape[1]], dtype = data.dtype)
+#                b[h_w:a.shape[0] + h_w, :a.shape[1]] = a
+#                full_data.append(b)
+#            full_data = np.array(full_data)
+#            full_ss = ss_data
         return full_data, full_ss
 
     def get_lengths(self, data, index_vec, max_length):
@@ -98,7 +120,7 @@ class Input_Handler:
         self.dat = self.normalize_data(self.dat, self.data_normalization_function)
         self.ss_dat = self.read_npy_file(self.input_directory + "/" + self.file_base + ".one_hots.npy")
         if self.load_aa_seq:
-            self.aa_seq = self.read_npy_file(self.input_directory + "/" + self.file_base + ".aa_encodings")
+            self.aa_seq = self.read_npy_file(self.input_directory + "/" + self.file_base + ".aa_seq_codes")
             self.aa_seq = self.parse_aa_encoding(self.aa_seq)
 
         self.train = np.loadtxt(self.ttv_file + "train" + str(self.index) + ".lst", delimiter = "\t", usecols = 1, dtype = int)
@@ -198,7 +220,7 @@ class Input_Handler:
             
         return ret_windows, ret_ss, None
     
-    def __init__(self, input_directory, data_file_base_name, ttv_file, index, max_prot_length, network_type, window_size, data_normalization_function, load_aa_seq = False):
+    def __init__(self, input_directory, data_file_base_name, ttv_file, index, max_prot_length, network_type, window_size, data_normalization_function, load_aa_seq = False, aa_codes = 23):
         self.input_directory = input_directory # dir where input npys are
         self.file_base = data_file_base_name # "psi_prots"|"cull_pdb" -> .matrix.npy and .one_hots.npy will be appended
         self.ttv_file = ttv_file # ttv_file of ttvs: "ttv_dir + psi_" + validation --> ttv_file = "psi_"
@@ -207,8 +229,9 @@ class Input_Handler:
         self.network_type = network_type
         self.window_size = window_size
         self.data_normalization_function = data_normalization_function
-        self.load_data()
         self.load_aa_seq = load_aa_seq
+        self.aa_codes = aa_codes
+        self.load_data()
     
 def main(argv):
     netw = Input_Handler("D:/Dennis/Uni/bachelor/data/prot_data/cull_prot_name_files/dat_files/", "cull_pdb_prots", "D:/Dennis/Uni/bachelor/data/prot_data/cull_prot_name_files/dat_files/", 1, 700, True, -1, "nothing")
