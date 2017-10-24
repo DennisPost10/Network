@@ -97,6 +97,9 @@ class Input_Handler:
         self.val_dat, self.ss_val_dat = self.reformat_data(self.dat, self.ss_dat, self.aa_seq, self.val, self.features, self.ss_features, self.max_prot_length, self.window_size)
         self.test_dat, self.ss_test_dat = self.reformat_data(self.dat, self.ss_dat, self.aa_seq, self.test, self.features, self.ss_features, self.max_prot_length, self.window_size)
 
+        self.val_dat, self.ss_val_dat = self.parse_batch(self.val_dat, self.ss_val_dat, self.val_lengths)
+        self.test_dat, self.ss_test_dat = self.parse_batch(self.test_dat, self.ss_test_dat, self.test_lengths)
+
         self.prot_index = 0
         self.random_prot_rank = np.random.permutation(len(self.train_dat))
         self.index = 0
@@ -121,15 +124,45 @@ class Input_Handler:
         
         self.single_dat, self.ss_single_dat = self.reformat_data(self.dat, self.ss_dat, self.aa_seq, self.single_dat, self.features, self.ss_features, self.max_prot_length, self.window_size)
     
+        self.single_dat, self.ss_single_dat = self.parse_batch(self.single_dat, self.ss_single_dat, self.single_lengths)
+    
         return self.single_dat, self.ss_single_dat, self.single_lengths
     
+    def parse_batch(self, dat, ss_dat, lengths):
+        if self.network_type == "cnn":
+            return dat, ss_dat
+        
+        parsed_dat = []
+        parsed_ss_dat = []
+        
+        for i in range(len(dat)):
+            for j in range(lengths[i]):
+                parsed_ss_dat.append(ss_dat[i][j])
+        
+        if self.network_type == "mixed":
+            for i in range(len(dat)):
+                for j in range(lengths[i]):
+                    parsed_dat.append(dat[i][j:(j + self.window_size)])
+                    
+        else:
+            for i in range(len(dat)):
+                for j in range(lengths[i]):
+                    if self.single_aa_seq:
+                        window = np.empty(shape = [self.window_size * self.features + self.aa_seq_add], dtype = dat.dtype)
+                        window[0:self.window_size * self.features] = self.dat[i][j:(j + self.window_size), 0:self.features].reshape(-1)
+                        window[self.window_size * self.features:] = self.dat[i][j + self.h_w, self.features:]
+                        parsed_dat.append(window)
+                    else:
+                        parsed_dat.append(dat[i][j:(j + self.window_size)].reshape(-1))
+            
+        return np.array(parsed_dat), np.array(parsed_ss_dat)        
     
     def val_batches(self):
         return self.val_dat, self.ss_val_dat, self.val_lengths
     
     def test_batches(self):
         return self.test_dat, self.ss_test_dat, self.test_lengths
-    
+            
     def next_prots(self, size):
         if self.network_type == "conv":
             return self.next_prots_cnn(size)
@@ -154,10 +187,10 @@ class Input_Handler:
             total_pull += next_pull
         return np.take(self.train_dat, ret_indices, 0), np.take(self.ss_train_dat, ret_indices, 0), np.take(self.train_lengths, ret_indices, 0)
         
-    def next_prots_not_cnn(self, size, single_aa_seq = False):
+    def next_prots_not_cnn(self, size):
         
         total_pull = 0
-        if single_aa_seq:
+        if self.single_aa_seq:
             ret_windows = np.empty(shape=[size, self.window_size * self.features + self.aa_seq_add], dtype = self.train_dat.dtype)
         else:
             ret_windows = np.empty(shape=[size, self.window_size * (self.features + self.aa_seq_add)], dtype = self.train_dat.dtype)
@@ -174,7 +207,7 @@ class Input_Handler:
             rows_left = self.train_lengths[self.prot_index] - self.index
             next_pull = min(rows_left, size - total_pull)
             for i in range(next_pull):
-                if single_aa_seq:
+                if self.single_aa_seq:
                     window = np.empty(shape = [self.window_size * self.features + self.aa_seq_add], dtype = self.train_dat.dtype)
                     window[0:self.window_size * self.features] = self.train_dat[self.prot_index][self.index:(self.index + self.window_size), 0:self.features].reshape(-1)
                     window[self.window_size * self.features:] = self.train_dat[self.prot_index][self.index + self.h_w, self.features:]
@@ -211,7 +244,7 @@ class Input_Handler:
   
         return ret_windows, ret_ss, None
     
-    def __init__(self, input_directory, data_file_base_name, ttv_file, index, max_prot_length, network_type, window_size, data_normalization_function, load_aa_seq = False, aa_codes = 23):
+    def __init__(self, input_directory, data_file_base_name, ttv_file, index, max_prot_length, network_type, window_size, data_normalization_function, load_aa_seq = False, aa_codes = 23, single_aa_seq = False):
         self.input_directory = input_directory # dir where input npys are
         self.file_base = data_file_base_name # "psi_prots"|"cull_pdb" -> .matrix.npy and .one_hots.npy will be appended
         self.ttv_file = ttv_file # ttv_file of ttvs: "ttv_dir + psi_" + validation --> ttv_file = "psi_"
@@ -222,6 +255,7 @@ class Input_Handler:
         self.data_normalization_function = data_normalization_function
         self.load_aa_seq = load_aa_seq
         self.aa_codes = aa_codes
+        self.single_aa_seq = single_aa_seq
         self.load_data()
     
 def main(argv):
