@@ -294,7 +294,7 @@ class mutable_network:
 		self.input_directory = configs.get("input_directory")
 		# "psi_prots"|"cull_pdb" -> .matrix.npy and .one_hots.npy will be appended
 		self.file_base = configs.get("data_file_base_name")
-		# ttv_file of ttvs: "ttv_dir + psi_" + validation --> ttv_file = "psi_"
+		# ttv_file of ttvs: "ttv_dir + psi_" + validation
 		self.ttv_file = configs.get("ttv_file")
 		# index of ttv_file: e.g. 2 for train2, test2, validation2 etc.
 		self.index = configs.get("index")
