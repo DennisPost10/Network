@@ -12,14 +12,14 @@ class Input_Handler:
     def normalize_data(self, data, data_normalization_function):
         if data_normalization_function == "standard":
             for i in range(len(data)):
-                    for j in range(len(data[i])):
-                        data[i][j] = 1.0 / (1.0 + math.exp(data[i][j]))
+                for j in range(len(data[i])):
+                    for k in range(len(data[i][j])):
+                        data[i][j][k] = 1.0 / (1.0 + math.exp(data[i][j][k]))
 #        elif data_normalization_function == "":
       
 #        elif data_normalization_function == "":
             
-        else:
-            return data
+        return data
         
     def reformat_data(self, data, ss_data, aa_seq_data, indices, features, ss_features, max_length, window_size):
         data = np.take(data, indices, 0)
@@ -70,6 +70,7 @@ class Input_Handler:
         
         self.dat = self.read_npy_file(self.input_directory + "/" + self.file_base + ".matrix.npy")
         self.dat = self.normalize_data(self.dat, self.data_normalization_function)
+        print(self.dat.shape)
         self.ss_dat = self.read_npy_file(self.input_directory + "/" + self.file_base + ".one_hots.npy")
 
         self.features = self.dat[0].shape[1]
@@ -79,7 +80,7 @@ class Input_Handler:
 
         self.aa_seq = None
         if self.load_aa_seq:
-            self.aa_seq = self.read_npy_file(self.input_directory + "/" + self.file_base + ".aa_seq_codes")
+            self.aa_seq = self.read_npy_file(self.input_directory + "/" + self.file_base + ".aa_seq_codes.npy")
 
         self.train = np.loadtxt(self.ttv_file + "train" + str(self.index) + ".lst", delimiter = "\t", usecols = 1, dtype = int)
         self.val = np.loadtxt(self.ttv_file + "validation" + str(self.index) + ".lst", delimiter = "\t", usecols = 1, dtype = int)
@@ -116,7 +117,7 @@ class Input_Handler:
 
         self.aa_seq = None
         if self.load_aa_seq:
-            self.aa_seq = self.read_npy_file(self.input_directory + "/" + self.file_base + ".aa_seq_codes")
+            self.aa_seq = self.read_npy_file(self.input_directory + "/" + self.file_base + ".aa_seq_codes.npy")
 
         self.single_dat = np.loadtxt(self.ttv_file + single_file + str(self.index) + ".lst", delimiter = "\t", usecols = 1, dtype = int)
         self.single_lengths, single_too_big = self.get_lengths(self.dat, self.single_dat, self.max_prot_length)
@@ -149,8 +150,8 @@ class Input_Handler:
                 for j in range(lengths[i]):
                     if self.single_aa_seq:
                         window = np.empty(shape = [self.window_size * self.features + self.aa_seq_add], dtype = dat.dtype)
-                        window[0:self.window_size * self.features] = self.dat[i][j:(j + self.window_size), 0:self.features].reshape(-1)
-                        window[self.window_size * self.features:] = self.dat[i][j + self.h_w, self.features:]
+                        window[0:self.window_size * self.features] = dat[i][j:(j + self.window_size), 0:self.features].reshape(-1)
+                        window[self.window_size * self.features:] = dat[i][j + self.h_w][self.features:]
                         parsed_dat.append(window)
                     else:
                         parsed_dat.append(dat[i][j:(j + self.window_size)].reshape(-1))
@@ -256,15 +257,20 @@ class Input_Handler:
         self.load_aa_seq = load_aa_seq
         self.aa_codes = aa_codes
         self.single_aa_seq = single_aa_seq
+        if not self.load_aa_seq:
+            self.single_aa_seq = False
         self.load_data()
     
 def main(argv):
-    netw = Input_Handler("D:/Dennis/Uni/bachelor/data/prot_data/cull_prot_name_files/dat_files/", "cull_pdb_prots", "D:/Dennis/Uni/bachelor/data/prot_data/cull_prot_name_files/dat_files/", 1, 700, "conv", -1, "nothing")
+    #netw = Input_Handler("D:/Dennis/Uni/bachelor/data/prot_data/cull_prot_name_files/dat_files/", "cull_pdb_prots", "D:/Dennis/Uni/bachelor/data/prot_data/cull_prot_name_files/dat_files/", 1, 700, "conv", -1, "nothing")
+    netw = Input_Handler("/home/proj/tmp/postd/prot_data/psi_prot_name_files/dat_files/", "psi_prots", "/home/proj/tmp/postd/prot_data/psi_prot_name_files/dat_files/", 1, 700, "a", 20, "standard", load_aa_seq=True, single_aa_seq=True)
 #    print(netw.val_batches())
 #    print(netw.test_batches())
-    for i in range(1000):
-        netw.next_prots(50)
-
+    for i in range(1):
+        a, b, c = netw.next_prots(1)
+        print(a)
+        print(c)
+        
 if __name__ == "__main__":
     main(sys.argv[1:])
         

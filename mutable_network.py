@@ -65,8 +65,8 @@ class mutable_network:
 				hidden_layer = tf.add(tf.matmul(input_tf_layer, hidden_weights), bias, name = "output_layer")
 			elif next_layer.layer_type == "conv":
 				hidden_weights = self.weight_variable([next_layer.window_size, input_layer.output_channels, next_layer.output_channels], "weight")
-				bias = self.bias_variable([next_layer.output_channels], "bias")
-				hidden_layer = self.conv1d(input_tf_layer, hidden_weights, name = "layer")
+				#bias = self.bias_variable([next_layer.output_channels], "bias")
+				hidden_layer = self.conv1d(input_tf_layer, hidden_weights, "layer")
 			if next_layer.relu:
 				hidden_layer = tf.nn.relu(hidden_layer)
 		tf_layer = hidden_layer
@@ -93,7 +93,7 @@ class mutable_network:
 				# final output
 				self.y = tf.placeholder(tf.float32, [None, self.ss_features], name="y")
 			
-				self.layer(Layer("x", "", False, self.features + self.aa_seq_add, self.window_size), self.x, 0) #!!!!!!
+				self.layer(Layer("x", "", False, self.features + self.aa_seq_add, self.window_size), self.x, 0)
 			
 			else:
 				# input
@@ -112,16 +112,15 @@ class mutable_network:
 					
 			self.prot_lengths = tf.placeholder(tf.int64, [None], name = "prot_lengths")
 			
-			
 			self.correct_prediction = tf.equal(tf.argmax(self.tf_layers[self.layer_count - 1], 1), tf.argmax(self.y, 1), name="correct_prediction")
 			self.accuracy = tf.reduce_mean(tf.cast(self.correct_prediction, tf.float32), name="accuracy")
 			self.observed = tf.argmax(self.y, 1)
-			self.h_count = tf.count_nonzero(tf.equal(tf.argmax(self.y, 1), 0), name = "h_count", dtype = tf.int32)
-			self.c_count = tf.count_nonzero(tf.equal(tf.argmax(self.y, 1), 1), name = "c_count", dtype = tf.int32)
-			self.e_count = tf.count_nonzero(tf.equal(tf.argmax(self.y, 1), 2), name = "e_count", dtype = tf.int32)
-			self.h_accuracy = tf.divide(tf.shape(tf.sets.set_intersection(tf.transpose(tf.where(tf.equal(tf.argmax(self.y,1), 0))), (tf.transpose(tf.where(tf.equal(tf.argmax(self.tf_layers[self.layer_count - 1],1), 0))))))[1], self.h_count, name = "h_accuracy")
-			self.c_accuracy = tf.divide(tf.shape(tf.sets.set_intersection(tf.transpose(tf.where(tf.equal(tf.argmax(self.y,1), 1))), (tf.transpose(tf.where(tf.equal(tf.argmax(self.tf_layers[self.layer_count - 1],1), 1))))))[1], self.c_count, name = "c_accuracy")
-			self.e_accuracy = tf.divide(tf.shape(tf.sets.set_intersection(tf.transpose(tf.where(tf.equal(tf.argmax(self.y,1), 2))), (tf.transpose(tf.where(tf.equal(tf.argmax(self.tf_layers[self.layer_count - 1],1), 2))))))[1], self.e_count, name = "e_accuracy")
+			self.h_count = tf.count_nonzero(tf.equal(tf.argmax(self.y, 1), 0), name = "h_count", dtype = tf.int64)
+			self.c_count = tf.count_nonzero(tf.equal(tf.argmax(self.y, 1), 1), name = "c_count", dtype = tf.int64)
+			self.e_count = tf.count_nonzero(tf.equal(tf.argmax(self.y, 1), 2), name = "e_count", dtype = tf.int64)
+			self.h_accuracy = tf.divide(tf.count_nonzero(tf.equal(tf.add(tf.cast(tf.equal(tf.argmax(self.y,1), 0), tf.int64), tf.cast(tf.equal(tf.argmax(self.tf_layers[self.layer_count - 1],1), 0), tf.int64)), 2)), self.h_count, name = "h_accuracy")
+			self.c_accuracy = tf.divide(tf.count_nonzero(tf.equal(tf.add(tf.cast(tf.equal(tf.argmax(self.y,1), 1), tf.int64), tf.cast(tf.equal(tf.argmax(self.tf_layers[self.layer_count - 1],1), 1), tf.int64)), 2)), self.c_count, name = "c_accuracy")
+			self.e_accuracy = tf.divide(tf.count_nonzero(tf.equal(tf.add(tf.cast(tf.equal(tf.argmax(self.y,1), 2), tf.int64), tf.cast(tf.equal(tf.argmax(self.tf_layers[self.layer_count - 1],1), 2), tf.int64)), 2)), self.e_count, name = "e_accuracy")
 			self.global_step = tf.Variable(0, name='global_step', trainable=False)
 			self.loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(labels=self.y, logits=self.tf_layers[self.layer_count - 1]), name="loss")
 			
@@ -134,8 +133,8 @@ class mutable_network:
 			self.sess = tf.Session(graph = self.g)
 			self.sess.run(self.init_op)
 			self.saver.save(self.sess, (self.output_directory + '/save/' + self.name), global_step=self.global_step)
-			self.saver.export_meta_graph(self.output_directory + '/save/' + self.name + "_meta")
-			tf.summary.FileWriter(self.output_directory + '/save/' + self.name).add_graph(self.g)
+			self.saver.export_meta_graph(self.output_directory + '/save/' + self.name + "_meta.empty")
+			tf.summary.FileWriter(self.output_directory + '/summary/' + self.name).add_graph(self.g)
 			#python -m tensorflow.tensorboard --logdir="C:\Users\Dennis\Desktop\test\test_afs\save\"
 	def restore_graph(self, checkpoint):
 		with self.g.as_default():
@@ -283,6 +282,7 @@ class mutable_network:
 		self.network_type = configs.get("network_type")
 		
 		self.use_aa_seq_data = configs.get("use_aa_seq_data")
+		self.single_aa_seq = configs.get("single_aa_seq")
 		self.aa_codes = configs.get("aa_codes")
 		self.aa_seq_add = self.aa_codes
 		if not self.use_aa_seq_data:
@@ -337,7 +337,7 @@ class mutable_network:
 		
 def main(argv):
 #	config_file = argv[0]
-	config_file = "C:/Users/Dennis/Desktop/mut_config.txt"
+	config_file = "/home/proj/tmp/postd/config.file"
 	print(config_file)
 	netw = mutable_network(config_file)
 
