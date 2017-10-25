@@ -112,15 +112,17 @@ class mutable_network:
 					
 			self.prot_lengths = tf.placeholder(tf.int64, [None], name = "prot_lengths")
 			
-			self.correct_prediction = tf.equal(tf.argmax(self.tf_layers[self.layer_count - 1], 1), tf.argmax(self.y, 1), name="correct_prediction")
-			self.accuracy = tf.reduce_mean(tf.cast(self.correct_prediction, tf.float32), name="accuracy")
-			self.observed = tf.argmax(self.y, 1)
-			self.h_count = tf.count_nonzero(tf.equal(tf.argmax(self.y, 1), 0), name = "h_count", dtype = tf.int64)
-			self.c_count = tf.count_nonzero(tf.equal(tf.argmax(self.y, 1), 1), name = "c_count", dtype = tf.int64)
-			self.e_count = tf.count_nonzero(tf.equal(tf.argmax(self.y, 1), 2), name = "e_count", dtype = tf.int64)
-			self.h_accuracy = tf.divide(tf.count_nonzero(tf.equal(tf.add(tf.cast(tf.equal(tf.argmax(self.y,1), 0), tf.int64), tf.cast(tf.equal(tf.argmax(self.tf_layers[self.layer_count - 1],1), 0), tf.int64)), 2)), self.h_count, name = "h_accuracy")
-			self.c_accuracy = tf.divide(tf.count_nonzero(tf.equal(tf.add(tf.cast(tf.equal(tf.argmax(self.y,1), 1), tf.int64), tf.cast(tf.equal(tf.argmax(self.tf_layers[self.layer_count - 1],1), 1), tf.int64)), 2)), self.c_count, name = "c_accuracy")
-			self.e_accuracy = tf.divide(tf.count_nonzero(tf.equal(tf.add(tf.cast(tf.equal(tf.argmax(self.y,1), 2), tf.int64), tf.cast(tf.equal(tf.argmax(self.tf_layers[self.layer_count - 1],1), 2), tf.int64)), 2)), self.e_count, name = "e_accuracy")
+			with tf.name_scope("accuracy"):
+				self.correct_prediction = tf.equal(tf.argmax(self.tf_layers[self.layer_count - 1], 1), tf.argmax(self.y, 1), name="correct_prediction")
+				self.accuracy = tf.reduce_mean(tf.cast(self.correct_prediction, tf.float32), name="accuracy")
+				self.observed = tf.argmax(self.y, 1)
+				self.predicted = tf.argmax(self.tf_layers[self.layer_count - 1], 1)
+				self.h_count = tf.count_nonzero(tf.equal(self.observed, 0), name = "h_count", dtype = tf.int64)
+				self.c_count = tf.count_nonzero(tf.equal(self.observed, 1), name = "c_count", dtype = tf.int64)
+				self.e_count = tf.count_nonzero(tf.equal(self.observed, 2), name = "e_count", dtype = tf.int64)
+				self.h_accuracy = tf.divide(tf.count_nonzero(tf.equal(tf.add(tf.cast(tf.equal(self.observed, 0), tf.int64), tf.cast(tf.equal(self.predicted, 0), tf.int64)), 2)), self.h_count, name = "h_accuracy")
+				self.c_accuracy = tf.divide(tf.count_nonzero(tf.equal(tf.add(tf.cast(tf.equal(self.observed, 1), tf.int64), tf.cast(tf.equal(self.predicted, 1), tf.int64)), 2)), self.c_count, name = "c_accuracy")
+				self.e_accuracy = tf.divide(tf.count_nonzero(tf.equal(tf.add(tf.cast(tf.equal(self.observed, 2), tf.int64), tf.cast(tf.equal(self.predicted, 2), tf.int64)), 2)), self.e_count, name = "e_accuracy")
 			self.global_step = tf.Variable(0, name='global_step', trainable=False)
 			self.loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(labels=self.y, logits=self.tf_layers[self.layer_count - 1]), name="loss")
 			
