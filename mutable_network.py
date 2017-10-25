@@ -110,7 +110,9 @@ class mutable_network:
 				else:
 					self.layer(Layer("x", "", False, 1, self.window_size * (self.features + self.aa_seq_add)), self.x, 0)
 					
-
+			self.prot_lengths = tf.placeholder(tf.int64, [None], name = "prot_lengths")
+			
+			
 			self.correct_prediction = tf.equal(tf.argmax(self.tf_layers[self.layer_count - 1], 1), tf.argmax(self.y, 1), name="correct_prediction")
 			self.accuracy = tf.reduce_mean(tf.cast(self.correct_prediction, tf.float32), name="accuracy")
 			self.observed = tf.argmax(self.y, 1)

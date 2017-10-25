@@ -259,7 +259,7 @@ class Input_Handler:
         self.load_data()
     
 def main(argv):
-    netw = Input_Handler("D:/Dennis/Uni/bachelor/data/prot_data/cull_prot_name_files/dat_files/", "cull_pdb_prots", "D:/Dennis/Uni/bachelor/data/prot_data/cull_prot_name_files/dat_files/", 1, 700, True, -1, "nothing")
+    netw = Input_Handler("D:/Dennis/Uni/bachelor/data/prot_data/cull_prot_name_files/dat_files/", "cull_pdb_prots", "D:/Dennis/Uni/bachelor/data/prot_data/cull_prot_name_files/dat_files/", 1, 700, "conv", -1, "nothing")
 #    print(netw.val_batches())
 #    print(netw.test_batches())
     for i in range(1000):
