@@ -1,13 +1,14 @@
 import os
 import sys
 
+from numpy import Infinity
+
 import matplotlib.pyplot as plt
 import numpy as np
 import tensorflow as tf
-from utils.Layer import Layer
 from utils.ConfigFileParser import Configurations
 from utils.InputHandler import Input_Handler
-from numpy import Infinity
+from utils.Layer import Layer
 
 
 sss = ['H', 'C', 'E']
@@ -56,7 +57,7 @@ class mutable_network:
 		next_layer = self.layers[layer_count]
 		with tf.name_scope(next_layer.name):
 			if next_layer.layer_type == "dropout":
-				hidden_layer = tf.nn.dropout(input_tf_layer, self.keep_prob_val, "dropout")
+				hidden_layer = tf.nn.dropout(input_tf_layer, self.keep_prob_val, name =  "dropout")
 			elif next_layer.layer_type == "fully":
 				print(input_layer.window_size)
 				print(next_layer.window_size)
@@ -137,7 +138,9 @@ class mutable_network:
 			self.saver.save(self.sess, (self.output_directory + '/save/' + self.name), global_step=self.global_step)
 			self.saver.export_meta_graph(self.output_directory + '/save/' + self.name + "_meta.empty")
 			tf.summary.FileWriter(self.output_directory + '/summary/' + self.name).add_graph(self.g)
-			#python -m tensorflow.tensorboard --logdir="C:\Users\Dennis\Desktop\test\test_afs\save\"
+			#python -m tensorflow.tensorboard --logdir="C:\Users\Dennis\Desktop\test\test_mixed\summary\"
+			#python -m tensorflow.tensorboard --logdir="/home/proj/tmp/postd/test/test_mixed/summary/"
+			#python ~/.local/lib/python3.6/site-packages/tensorboard/main.py --logdir="/home/proj/tmp/postd/test/test_mixed/summary/"
 	def restore_graph(self, checkpoint):
 		with self.g.as_default():
 			print(self.sess.run(self.b_p))
@@ -310,7 +313,7 @@ class mutable_network:
 		self.layer_count = len(self.layers)
 		print("number of layers: " + str(self.layer_count))
 		
-		if self.layers[len(self.layers) - 1].window_size != self.ss_features:
+		if self.layers[len(self.layers) - 1].layer_type != "dropout" and self.layers[len(self.layers) - 1].window_size != self.ss_features:
 			print("Error: output_channels unequal ss_features")
 			print(str(self.layers[len(self.layers) - 1].output_channels) + " != " + str(self.ss_features))
 			sys.exit()
@@ -339,7 +342,8 @@ class mutable_network:
 		
 def main(argv):
 #	config_file = argv[0]
-	config_file = "/home/proj/tmp/postd/config.file"
+#	config_file = "/home/proj/tmp/postd/config.file"
+	config_file = "C:/Users/Dennis/Desktop/mut_config.txt"
 	print(config_file)
 	netw = mutable_network(config_file)
 

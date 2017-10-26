@@ -13,9 +13,9 @@ class Configurations:
         with open(config_file) as config:
             layers = list()
             for line in config:
+                #print(line)
                 if not line.startswith("#"):
-                    key, val, typ = line.split("\t")
-                    typ = typ.strip()
+                    key, val, typ = line.strip().split("\t")
                     if typ == "int":
                         self.configs[key] = int(val)
                     elif typ == "float":
@@ -37,13 +37,12 @@ class Configurations:
                         self.configs[key] = arr
                     else:
                         self.configs[key] = val
-                else:
-                    if line.startswith("#layer"):
-                        useless, name, layer_type, relu, output_channels, window_size = line.split("\t")
-                        relu = (val == "true" or val == "TRUE" or val == "True" or val == "T")
-                        output_channels = int(output_channels)
-                        window_size = int(window_size)
-                        layers.append(Layer(name, layer_type, relu, output_channels, window_size))
+                elif line.startswith("#layer"):
+                    useless, name, layer_type, relu, output_channels, window_size = line.split("\t")
+                    relu = (val == "true" or val == "TRUE" or val == "True" or val == "T")
+                    output_channels = int(output_channels)
+                    window_size = int(window_size)
+                    layers.append(Layer(name, layer_type, relu, output_channels, window_size))
         self.configs["parsed_layers"] = layers
         print(self.configs)
 #Configurations("D:/Dennis/Uni/bachelor/double_network/config.txt")
