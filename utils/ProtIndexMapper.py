@@ -34,7 +34,7 @@ def read_prot_file(prot_file, file_directory, output_directory, validation_facto
                 for j in indices:
                     output.write(prots[j] + "\t" + str(j) + "\n")
 
-def write_files(index, data, test_set, train_set, validation_set, output_directory, prefix = ""):
+def write_files(index, data, test_set, train_set, validation_set, output_directory, prefix=""):
     with open(output_directory + "/" + prefix + "test" + str(index) + ".lst", "w") as t:
         for p in test_set:
             t.write(data[p] + "\t" + str(p) + "\n")

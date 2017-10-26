@@ -56,8 +56,8 @@ class CNN_Inputparser:
                 data2[:data.shape[0], :data.shape[1]] = data
                 
                 self.prot_matrices.append(data2)
-                one_hots = np.loadtxt(self.prot_directory + "/" + prot + "/" + prot + ".ss_one_hot", dtype = int, delimiter = "\t")
-                one = np.zeros([self.max_prot_length, 3], dtype = float)
+                one_hots = np.loadtxt(self.prot_directory + "/" + prot + "/" + prot + ".ss_one_hot", dtype=int, delimiter="\t")
+                one = np.zeros([self.max_prot_length, 3], dtype=float)
                 one[:one_hots.shape[0], :one_hots.shape[1]] = one_hots
                 self.prot_outcomes.append(one)
         

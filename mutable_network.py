@@ -57,16 +57,19 @@ class mutable_network:
 		next_layer = self.layers[layer_count]
 		with tf.name_scope(next_layer.name):
 			if next_layer.layer_type == "dropout":
-				hidden_layer = tf.nn.dropout(input_tf_layer, self.keep_prob_val, name =  "dropout")
+				hidden_layer = tf.nn.dropout(input_tf_layer, self.keep_prob_val, name="dropout")
 			elif next_layer.layer_type == "fully":
 				print(input_layer.window_size)
 				print(next_layer.window_size)
-				hidden_weights = self.weight_variable([input_layer.window_size, next_layer.window_size], "weight")
+				input_shape = input_tf_layer.get_shape().as_list()
+				dim = np.prod(input_shape[1:])
+				reshaped_input_layer = tf.reshape(input_tf_layer, [-1, dim])
+				hidden_weights = self.weight_variable([dim, next_layer.window_size], "weight")
 				bias = self.bias_variable([next_layer.window_size], "bias")
-				hidden_layer = tf.add(tf.matmul(input_tf_layer, hidden_weights), bias, name = "output_layer")
+				hidden_layer = tf.add(tf.matmul(reshaped_input_layer, hidden_weights), bias, name="output_layer")
 			elif next_layer.layer_type == "conv":
 				hidden_weights = self.weight_variable([next_layer.window_size, input_layer.output_channels, next_layer.output_channels], "weight")
-				#bias = self.bias_variable([next_layer.output_channels], "bias")
+				# bias = self.bias_variable([next_layer.output_channels], "bias")
 				hidden_layer = self.conv1d(input_tf_layer, hidden_weights, "layer")
 			if next_layer.relu:
 				hidden_layer = tf.nn.relu(hidden_layer)
@@ -111,36 +114,38 @@ class mutable_network:
 				else:
 					self.layer(Layer("x", "", False, 1, self.window_size * (self.features + self.aa_seq_add)), self.x, 0)
 					
-			self.prot_lengths = tf.placeholder(tf.int64, [None], name = "prot_lengths")
+			self.prot_lengths = tf.placeholder(tf.int64, [None], name="prot_lengths")
 			
 			with tf.name_scope("accuracy"):
 				self.correct_prediction = tf.equal(tf.argmax(self.tf_layers[self.layer_count - 1], 1), tf.argmax(self.y, 1), name="correct_prediction")
 				self.accuracy = tf.reduce_mean(tf.cast(self.correct_prediction, tf.float32), name="accuracy")
 				self.observed = tf.argmax(self.y, 1)
 				self.predicted = tf.argmax(self.tf_layers[self.layer_count - 1], 1)
-				self.h_count = tf.count_nonzero(tf.equal(self.observed, 0), name = "h_count", dtype = tf.int64)
-				self.c_count = tf.count_nonzero(tf.equal(self.observed, 1), name = "c_count", dtype = tf.int64)
-				self.e_count = tf.count_nonzero(tf.equal(self.observed, 2), name = "e_count", dtype = tf.int64)
-				self.h_accuracy = tf.divide(tf.count_nonzero(tf.equal(tf.add(tf.cast(tf.equal(self.observed, 0), tf.int64), tf.cast(tf.equal(self.predicted, 0), tf.int64)), 2)), self.h_count, name = "h_accuracy")
-				self.c_accuracy = tf.divide(tf.count_nonzero(tf.equal(tf.add(tf.cast(tf.equal(self.observed, 1), tf.int64), tf.cast(tf.equal(self.predicted, 1), tf.int64)), 2)), self.c_count, name = "c_accuracy")
-				self.e_accuracy = tf.divide(tf.count_nonzero(tf.equal(tf.add(tf.cast(tf.equal(self.observed, 2), tf.int64), tf.cast(tf.equal(self.predicted, 2), tf.int64)), 2)), self.e_count, name = "e_accuracy")
-			self.global_step = tf.Variable(0, name='global_step', trainable=False)
-			self.loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(labels=self.y, logits=self.tf_layers[self.layer_count - 1]), name="loss")
+				self.h_count = tf.count_nonzero(tf.equal(self.observed, 0), name="h_count", dtype=tf.int64)
+				self.c_count = tf.count_nonzero(tf.equal(self.observed, 1), name="c_count", dtype=tf.int64)
+				self.e_count = tf.count_nonzero(tf.equal(self.observed, 2), name="e_count", dtype=tf.int64)
+				self.h_accuracy = tf.divide(tf.count_nonzero(tf.equal(tf.add(tf.cast(tf.equal(self.observed, 0), tf.int64), tf.cast(tf.equal(self.predicted, 0), tf.int64)), 2)), self.h_count, name="h_accuracy")
+				self.c_accuracy = tf.divide(tf.count_nonzero(tf.equal(tf.add(tf.cast(tf.equal(self.observed, 1), tf.int64), tf.cast(tf.equal(self.predicted, 1), tf.int64)), 2)), self.c_count, name="c_accuracy")
+				self.e_accuracy = tf.divide(tf.count_nonzero(tf.equal(tf.add(tf.cast(tf.equal(self.observed, 2), tf.int64), tf.cast(tf.equal(self.predicted, 2), tf.int64)), 2)), self.e_count, name="e_accuracy")
+			with tf.name_scope("global_step"):
+				self.global_step = tf.Variable(0, name='global_step', trainable=False)
+			with tf.name_scope("loss"):
+				self.loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(labels=self.y, logits=self.tf_layers[self.layer_count - 1]), name="loss")
 			
-#			self.train_step = tf.train.MomentumOptimizer(learning_rate=self.learning_rate, momentum=self.momentum_val, name="train_step").minimize(self.loss, global_step=self.global_step)
-			self.train_step = self.init_optimizer().minimize(self.loss, global_step = self.global_step)
+# 			self.train_step = tf.train.MomentumOptimizer(learning_rate=self.learning_rate, momentum=self.momentum_val, name="train_step").minimize(self.loss, global_step=self.global_step)
+			self.train_step = self.init_optimizer().minimize(self.loss, global_step=self.global_step)
 			
 			self.init_op = tf.global_variables_initializer()
 			self.saver = tf.train.Saver(max_to_keep=1)
 			
-			self.sess = tf.Session(graph = self.g)
+			self.sess = tf.Session(graph=self.g)
 			self.sess.run(self.init_op)
 			self.saver.save(self.sess, (self.output_directory + '/save/' + self.name), global_step=self.global_step)
 			self.saver.export_meta_graph(self.output_directory + '/save/' + self.name + "_meta.empty")
 			tf.summary.FileWriter(self.output_directory + '/summary/' + self.name).add_graph(self.g)
-			#python -m tensorflow.tensorboard --logdir="C:\Users\Dennis\Desktop\test\test_mixed\summary\"
-			#python -m tensorflow.tensorboard --logdir="/home/proj/tmp/postd/test/test_mixed/summary/"
-			#python ~/.local/lib/python3.6/site-packages/tensorboard/main.py --logdir="/home/proj/tmp/postd/test/test_mixed/summary/"
+			# python -m tensorflow.tensorboard --logdir="C:\Users\Dennis\Desktop\test\test_mixed\summary\"
+			# python -m tensorflow.tensorboard --logdir="/home/proj/tmp/postd/test/test_mixed/summary/"
+			# python ~/.local/lib/python3.6/site-packages/tensorboard/main.py --logdir="/home/proj/tmp/postd/test/test_mixed/summary/"
 	def restore_graph(self, checkpoint):
 		with self.g.as_default():
 			print(self.sess.run(self.b_p))
@@ -155,14 +160,14 @@ class mutable_network:
 			if file.endswith(".meta"):
 				self.ckpt = self.output_directory + "/save/" + os.path.splitext(file)[0]
 		if(self.ckpt == None):
-				print("Error: missing ckpt")
-				sys.exit()
+			print("Error: missing ckpt")
+			sys.exit()
 		print("ckpt: " + self.ckpt)
 		self.restore_graph(self.ckpt)
 		
 	def train(self):
 		
-		self.prot_it = Input_Handler(self.input_directory, self.data_file_base_name, self.ttv_file, self.index, self.max_prot_length, self.network_type, self.window_size)
+		self.prot_it = Input_Handler(self.input_directory, self.file_base, self.ttv_file, self.index, self.max_prot_length, self.network_type, self.window_size, self.data_normalization_function, self.use_aa_seq_data, self.aa_codes, self.single_aa_seq)
 
 		self.val_batch, self.val_batch_o, self.val_batch_l = self.prot_it.val_batches()
 
@@ -186,30 +191,33 @@ class mutable_network:
 			
 			check_range = 100
 			alpha = 0.001
-			lower_acc = self.winner_acc, lower_loss = self.winner_loss
+			lower_acc = self.winner_acc
+			lower_loss = self.winner_loss
 			
 			for step in range(self.start_index, self.start_index + self.steps):
 				if step % check_range == 0:
 					summarystr, loss_val, accuracy_eval, h_acc, c_acc, e_acc = self.sess.run([summary, self.loss, self.accuracy, self.h_accuracy, self.c_accuracy, self.e_accuracy], feed_dict={self.x: self.val_batch, self.y: self.val_batch_o, self.prot_lengths: self.val_batch_l, self.keep_prob: 1})
-					if(accuracy_eval - lower_acc > alpha or loss_val - lower_loss < alpha):
+#					if(accuracy_eval - lower_acc > alpha or loss_val - lower_loss < alpha):
+					#print('Step %d: eval_accuracy = %.3f loss = %.3f H: %.3f C: %.3f E: %.3f (%d)' % (step, accuracy_eval, loss_val, h_acc, c_acc, e_acc, batch_count))
+					if(loss_val - lower_loss < alpha):
 						self.winner_acc = max(self.winner_acc, accuracy_eval)
 						self.winner_loss = min(self.winner_loss, loss_val)
 						lower_acc = accuracy_eval
 						lower_loss = loss_val
 						better = True
 						self.saver.save(self.sess, (self.output_directory + '/save/' + self.name), global_step=self.global_step)
-#				if step % 1000 == 0:
+# 				if step % 1000 == 0:
 						print('Step %d: eval_accuracy = %.3f loss = %.3f H: %.3f C: %.3f E: %.3f (%d)' % (step, accuracy_eval, loss_val, h_acc, c_acc, e_acc, batch_count))
 						summary_writer.add_summary(summarystr, step)		
-#					if step % 10000 == 0:
+					if step % 10000 == 0:
 						if better:
 							better = False
 						else:
 							print("finished early")
 							return
 				
-				ret_prots, ret_prots_o, lengths = self.prot_it.next_prots(self.batch_size)
-				_ = self.sess.run(self.train_step, feed_dict={self.x: ret_prots, self.y: ret_prots_o, self.keep_prob: self.keep_prob_val, self.prot_lengths: lengths})
+				ret_prots, ret_prots_o, ret_lengths = self.prot_it.next_prots(self.batch_size)
+				_ = self.sess.run(self.train_step, feed_dict={self.x: ret_prots, self.y: ret_prots_o, self.keep_prob: self.keep_prob_val, self.prot_lengths: ret_lengths})
 				batch_count += 1
 		
 			self.saver.save(self.sess, (self.output_directory + '/save/' + self.name), global_step=self.global_step)
@@ -224,8 +232,8 @@ class mutable_network:
 		with self.g.as_default():
 			prediction = tf.argmax(self.tf_layers[self.layer_count - 1], 1)
 
-			hce_counts = np.zeros(3, dtype = float)
-			hce_matches = np.zeros(3, dtype = float)
+			hce_counts = np.zeros(3, dtype=float)
+			hce_matches = np.zeros(3, dtype=float)
 
 			number_correct = 0.0
 			looked_at = 0.0
@@ -271,8 +279,8 @@ class mutable_network:
 			print("Error: no input")
 			sys.exit()
 
-#		self.training_file = configs["training_file"]
-#		self.test_file = configs["test_file"]
+# 		self.training_file = configs["training_file"]
+# 		self.test_file = configs["test_file"]
 		self.output_directory = configs.get("output_directory")
 		self.name = configs.get("name")
 		self.learning_rate = configs.get("learning_rate")
@@ -305,17 +313,18 @@ class mutable_network:
 		self.index = configs.get("index")
 		self.data_normalization_function = configs.get("data_normalization_function")
 		
-#		self.checkpoint = configs["checkpoint"]
-#		self.meta_graph = configs["meta_graph"]
-#		self.train = configs["train"]
-#		self.predict = configs["predict"]
+# 		self.checkpoint = configs["checkpoint"]
+# 		self.meta_graph = configs["meta_graph"]
+# 		self.train = configs["train"]
+# 		self.predict = configs["predict"]
 		self.layers = configs.get("parsed_layers")
 		self.layer_count = len(self.layers)
 		print("number of layers: " + str(self.layer_count))
 		
-		if self.layers[len(self.layers) - 1].layer_type != "dropout" and self.layers[len(self.layers) - 1].window_size != self.ss_features:
+		last_layer = self.layers[self.layer_count - 1]
+		if (last_layer.layer_type == "conv" and last_layer.output_channels != self.ss_features) or (last_layer.layer_type == "fully" and last_layer.window_size != self.ss_features):
 			print("Error: output_channels unequal ss_features")
-			print(str(self.layers[len(self.layers) - 1].output_channels) + " != " + str(self.ss_features))
+			print(last_layer.output_channels + " or " + str(last_layer.window_size) + " != " + str(self.ss_features))
 			sys.exit()
 		
 		self.tf_layers = list()
@@ -330,8 +339,8 @@ class mutable_network:
 		if not os.path.exists(self.output_directory + "summary"):
 			os.makedirs(self.output_directory + "summary")
 		
-	#	else:
-	#		nw2.
+	# 	else:
+	# 		nw2.
 		
 		self.winner_acc = -1.0
 		self.winner_loss = Infinity
@@ -341,11 +350,14 @@ class mutable_network:
 		self.build_graph()
 		
 def main(argv):
-#	config_file = argv[0]
-#	config_file = "/home/proj/tmp/postd/config.file"
-	config_file = "C:/Users/Dennis/Desktop/mut_config.txt"
+# 	config_file = argv[0]
+#	config_file = "/home/proj/tmp/postd/config2.file"
+#	config_file = "/home/proj/tmp/postd/conv_config.file"
+	config_file = "/home/proj/tmp/postd/mixed_config.file"
+# 	config_file = "C:/Users/Dennis/Desktop/mut_config.txt"
 	print(config_file)
 	netw = mutable_network(config_file)
+	netw.train()
 
 if __name__ == "__main__":
 	main(sys.argv[1:])

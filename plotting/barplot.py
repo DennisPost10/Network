@@ -10,14 +10,14 @@ import seaborn as sea
 
 class barplot:
     
-    def plot(self, xlab, ylab, invert = False, display = False, save = True):
+    def plot(self, xlab, ylab, invert=False, display=False, save=True):
         sea.set(style="whitegrid", color_codes=True)
         plt.figure()
         if invert:
             ax = sea.barplot(x='value', y='categorie', data=self.data)
         else:    
             ax = sea.barplot(x='categorie', y='value', data=self.data)
-        ax.set(xlabel = xlab, ylabel = ylab)
+        ax.set(xlabel=xlab, ylabel=ylab)
         if save:
             plt.savefig(self.output_file)
         if display:

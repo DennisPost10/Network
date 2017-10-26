@@ -76,12 +76,12 @@ class nw2:
 			self.accuracy2 = tf.reduce_mean(tf.cast(self.correct_prediction2, tf.float32), name="accuracy2")
 			self.observed2 = tf.argmax(self.y2, 1)
 	
-			self.h_count2 = tf.count_nonzero(tf.equal(tf.argmax(self.y2, 1), 0), name = "h_count2", dtype = tf.int32)
-			self.c_count2 = tf.count_nonzero(tf.equal(tf.argmax(self.y2, 1), 1), name = "c_count2", dtype = tf.int32)
-			self.e_count2 = tf.count_nonzero(tf.equal(tf.argmax(self.y2, 1), 2), name = "e_count2", dtype = tf.int32)
-			self.h_accuracy2 = tf.divide(tf.shape(tf.sets.set_intersection(tf.transpose(tf.where(tf.equal(tf.argmax(self.y2,1), 0))), (tf.transpose(tf.where(tf.equal(tf.argmax(self.y_p2,1), 0))))))[1], self.h_count2, name = "h_accuracy2")
-			self.c_accuracy2 = tf.divide(tf.shape(tf.sets.set_intersection(tf.transpose(tf.where(tf.equal(tf.argmax(self.y2,1), 1))), (tf.transpose(tf.where(tf.equal(tf.argmax(self.y_p2,1), 1))))))[1], self.c_count2, name = "c_accuracy2")
-			self.e_accuracy2 = tf.divide(tf.shape(tf.sets.set_intersection(tf.transpose(tf.where(tf.equal(tf.argmax(self.y2,1), 2))), (tf.transpose(tf.where(tf.equal(tf.argmax(self.y_p2,1), 2))))))[1], self.e_count2, name = "e_accuracy2")
+			self.h_count2 = tf.count_nonzero(tf.equal(tf.argmax(self.y2, 1), 0), name="h_count2", dtype=tf.int32)
+			self.c_count2 = tf.count_nonzero(tf.equal(tf.argmax(self.y2, 1), 1), name="c_count2", dtype=tf.int32)
+			self.e_count2 = tf.count_nonzero(tf.equal(tf.argmax(self.y2, 1), 2), name="e_count2", dtype=tf.int32)
+			self.h_accuracy2 = tf.divide(tf.shape(tf.sets.set_intersection(tf.transpose(tf.where(tf.equal(tf.argmax(self.y2, 1), 0))), (tf.transpose(tf.where(tf.equal(tf.argmax(self.y_p2, 1), 0))))))[1], self.h_count2, name="h_accuracy2")
+			self.c_accuracy2 = tf.divide(tf.shape(tf.sets.set_intersection(tf.transpose(tf.where(tf.equal(tf.argmax(self.y2, 1), 1))), (tf.transpose(tf.where(tf.equal(tf.argmax(self.y_p2, 1), 1))))))[1], self.c_count2, name="c_accuracy2")
+			self.e_accuracy2 = tf.divide(tf.shape(tf.sets.set_intersection(tf.transpose(tf.where(tf.equal(tf.argmax(self.y2, 1), 2))), (tf.transpose(tf.where(tf.equal(tf.argmax(self.y_p2, 1), 2))))))[1], self.e_count2, name="e_accuracy2")
 			self.global_step2 = tf.Variable(0, name='global_step2', trainable=False)
 			self.loss2 = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(labels=self.y2, logits=self.y_p2), name="loss2")
 	
@@ -89,7 +89,7 @@ class nw2:
 			self.init_op2 = tf.global_variables_initializer()
 			self.saver2 = tf.train.Saver(max_to_keep=1)
 			
-			self.sess2 = tf.Session(graph = self.g2)
+			self.sess2 = tf.Session(graph=self.g2)
 			self.sess2.run(self.init_op2)
 
 	def train(self, training_file):
@@ -144,8 +144,8 @@ class nw2:
 		with self.g2.as_default():
 			prediction2 = tf.argmax(self.y_p2, 1)
 
-			hce_counts = np.zeros(3, dtype = float)
-			hce_matches = np.zeros(3, dtype = float)
+			hce_counts = np.zeros(3, dtype=float)
+			hce_matches = np.zeros(3, dtype=float)
 
 			number_correct = 0.0
 			looked_at = 0.0
@@ -209,8 +209,8 @@ class nw2:
 		if(configs == None):
 			print("Error: no input")
 			sys.exit()
-#		self.training_file = configs["training_file"]
-#		self.test_file = configs["test_file"]
+# 		self.training_file = configs["training_file"]
+# 		self.test_file = configs["test_file"]
 		self.prot_directory = configs["protein_directory"]
 		self.output_directory = configs["output_directory"]
 		self.name = configs["name"]
@@ -219,10 +219,10 @@ class nw2:
 		self.steps = configs["max_steps"]
 		self.keep_prob_val = configs["keep_prob"]
 		self.momentum_val = configs["momentum"]
-#		self.checkpoint = configs["checkpoint"]
-#		self.meta_graph = configs["meta_graph"]
-#		self.train = configs["train"]
-#		self.predict = configs["predict"]
+# 		self.checkpoint = configs["checkpoint"]
+# 		self.meta_graph = configs["meta_graph"]
+# 		self.train = configs["train"]
+# 		self.predict = configs["predict"]
 		self.underlying_nw1 = None
 		for file in os.listdir(self.output_directory + "/" + self.name + "/save/"):
 			if file.endswith(".meta"):

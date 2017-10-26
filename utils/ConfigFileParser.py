@@ -13,7 +13,7 @@ class Configurations:
         with open(config_file) as config:
             layers = list()
             for line in config:
-                #print(line)
+                # print(line)
                 if not line.startswith("#"):
                     key, val, typ = line.strip().split("\t")
                     if typ == "int":
@@ -45,4 +45,4 @@ class Configurations:
                     layers.append(Layer(name, layer_type, relu, output_channels, window_size))
         self.configs["parsed_layers"] = layers
         print(self.configs)
-#Configurations("D:/Dennis/Uni/bachelor/double_network/config.txt")
+# Configurations("D:/Dennis/Uni/bachelor/double_network/config.txt")

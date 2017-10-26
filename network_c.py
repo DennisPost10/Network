@@ -59,19 +59,19 @@ class nw1:
 			self.correct_prediction = tf.equal(tf.argmax(self.y_p, 1), tf.argmax(self.y, 1), name="correct_prediction")
 			self.accuracy = tf.reduce_mean(tf.cast(self.correct_prediction, tf.float32), name="accuracy")
 			self.observed = tf.argmax(self.y, 1)
-			self.h_count = tf.count_nonzero(tf.equal(tf.argmax(self.y, 1), 0), name = "h_count", dtype = tf.int32)
-			self.c_count = tf.count_nonzero(tf.equal(tf.argmax(self.y, 1), 1), name = "c_count", dtype = tf.int32)
-			self.e_count = tf.count_nonzero(tf.equal(tf.argmax(self.y, 1), 2), name = "e_count", dtype = tf.int32)
-			self.h_accuracy = tf.divide(tf.shape(tf.sets.set_intersection(tf.transpose(tf.where(tf.equal(tf.argmax(self.y,1), 0))), (tf.transpose(tf.where(tf.equal(tf.argmax(self.y_p,1), 0))))))[1], self.h_count, name = "h_accuracy")
-			self.c_accuracy = tf.divide(tf.shape(tf.sets.set_intersection(tf.transpose(tf.where(tf.equal(tf.argmax(self.y,1), 1))), (tf.transpose(tf.where(tf.equal(tf.argmax(self.y_p,1), 1))))))[1], self.c_count, name = "c_accuracy")
-			self.e_accuracy = tf.divide(tf.shape(tf.sets.set_intersection(tf.transpose(tf.where(tf.equal(tf.argmax(self.y,1), 2))), (tf.transpose(tf.where(tf.equal(tf.argmax(self.y_p,1), 2))))))[1], self.e_count, name = "e_accuracy")
+			self.h_count = tf.count_nonzero(tf.equal(tf.argmax(self.y, 1), 0), name="h_count", dtype=tf.int32)
+			self.c_count = tf.count_nonzero(tf.equal(tf.argmax(self.y, 1), 1), name="c_count", dtype=tf.int32)
+			self.e_count = tf.count_nonzero(tf.equal(tf.argmax(self.y, 1), 2), name="e_count", dtype=tf.int32)
+			self.h_accuracy = tf.divide(tf.shape(tf.sets.set_intersection(tf.transpose(tf.where(tf.equal(tf.argmax(self.y, 1), 0))), (tf.transpose(tf.where(tf.equal(tf.argmax(self.y_p, 1), 0))))))[1], self.h_count, name="h_accuracy")
+			self.c_accuracy = tf.divide(tf.shape(tf.sets.set_intersection(tf.transpose(tf.where(tf.equal(tf.argmax(self.y, 1), 1))), (tf.transpose(tf.where(tf.equal(tf.argmax(self.y_p, 1), 1))))))[1], self.c_count, name="c_accuracy")
+			self.e_accuracy = tf.divide(tf.shape(tf.sets.set_intersection(tf.transpose(tf.where(tf.equal(tf.argmax(self.y, 1), 2))), (tf.transpose(tf.where(tf.equal(tf.argmax(self.y_p, 1), 2))))))[1], self.e_count, name="e_accuracy")
 			self.global_step = tf.Variable(0, name='global_step', trainable=False)
 			self.loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(labels=self.y, logits=self.y_p), name="loss")
 			self.train_step = tf.train.MomentumOptimizer(learning_rate=self.learning_rate, momentum=self.momentum_val, name="train_step").minimize(self.loss, global_step=self.global_step)
 			self.init_op = tf.global_variables_initializer()
 			self.saver = tf.train.Saver(max_to_keep=1)
 			
-			self.sess = tf.Session(graph = self.g)
+			self.sess = tf.Session(graph=self.g)
 			self.sess.run(self.init_op)
 	
 	def restore_graph(self, checkpoint):
@@ -114,15 +114,15 @@ class nw1:
 			batch_count = 0
 			better = False
 			check_range = 100
-#			lower_acc = 0, upper_acc = 0, lower_loss = 0, upper_loss = 0
+# 			lower_acc = 0, upper_acc = 0, lower_loss = 0, upper_loss = 0
 			for step in range(self.start_index, self.start_index + self.steps):
 				if step % check_range == 0:
 					summarystr, loss_val, accuracy_eval, h_acc, c_acc, e_acc = self.sess.run([summary, self.loss, self.accuracy, self.h_accuracy, self.c_accuracy, self.e_accuracy], feed_dict={self.x: self.prot_it.test_set, self.y: self.prot_it.test_set_o, self.keep_prob: 1})
-#					lower_acc = upper_acc
-#					lower_loss = upper_loss
-#					upper_acc = accuracy_eval
-#					upper_loss = loss_val
-#					if(accuracy_eval > self.winner_acc or loss_val < self.winner_loss):
+# 					lower_acc = upper_acc
+# 					lower_loss = upper_loss
+# 					upper_acc = accuracy_eval
+# 					upper_loss = loss_val
+# 					if(accuracy_eval > self.winner_acc or loss_val < self.winner_loss):
 					self.winner_acc = accuracy_eval
 					self.winner_loss = loss_val
 					better = True
@@ -153,8 +153,8 @@ class nw1:
 		with self.g.as_default():
 			prediction = tf.argmax(self.y_p, 1)
 
-			hce_counts = np.zeros(3, dtype = float)
-			hce_matches = np.zeros(3, dtype = float)
+			hce_counts = np.zeros(3, dtype=float)
+			hce_matches = np.zeros(3, dtype=float)
 
 			number_correct = 0.0
 			looked_at = 0.0
@@ -200,8 +200,8 @@ class nw1:
 			print("Error: no input")
 			sys.exit()
 
-#		self.training_file = configs["training_file"]
-#		self.test_file = configs["test_file"]
+# 		self.training_file = configs["training_file"]
+# 		self.test_file = configs["test_file"]
 		self.prot_directory = configs["protein_directory"]
 		self.output_directory = configs["output_directory"]
 		self.name = configs["name"]
@@ -210,10 +210,10 @@ class nw1:
 		self.steps = configs["max_steps"]
 		self.keep_prob_val = configs["keep_prob"]
 		self.momentum_val = configs["momentum"]
-#		self.checkpoint = configs["checkpoint"]
-#		self.meta_graph = configs["meta_graph"]
-#		self.train = configs["train"]
-#		self.predict = configs["predict"]
+# 		self.checkpoint = configs["checkpoint"]
+# 		self.meta_graph = configs["meta_graph"]
+# 		self.train = configs["train"]
+# 		self.predict = configs["predict"]
 		
 		self.output_directory = self.output_directory + "/" + self.name + "/"
 		if not os.path.exists(self.output_directory):
@@ -226,8 +226,8 @@ class nw1:
 		if not os.path.exists(self.output_directory + "summary"):
 			os.makedirs(self.output_directory + "summary")
 		
-	#	else:
-	#		nw2.
+	# 	else:
+	# 		nw2.
 		
 		self.winner_acc = -1.0
 		self.winner_loss = Infinity	

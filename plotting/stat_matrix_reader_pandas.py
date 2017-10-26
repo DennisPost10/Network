@@ -19,7 +19,7 @@ class stats_plotter:
             sys.exit()
         self.stats_matrix = p.read_table(self.matrix_file, delimiter='\t')
 
-    def plot_all_stats(self, save = True):
+    def plot_all_stats(self, save=True):
         self.plot_length_distribution()
     
     def plot_length_distribution(self):

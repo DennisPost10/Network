@@ -3,9 +3,9 @@ import sys
 import numpy as np
 
 def read_prot_file(file):
-    return np.loadtxt(file, dtype = str, delimiter = "\n")
+    return np.loadtxt(file, dtype=str, delimiter="\n")
 
-def write_files(index, data, test_set, train_set, validation_set, output_directory, prefix = ""):
+def write_files(index, data, test_set, train_set, validation_set, output_directory, prefix=""):
     with open(output_directory + "/" + prefix + "test" + str(index) + ".lst", "w") as t:
         for p in test_set:
             t.write(data[p] + "\t" + str(p) + "\n")
@@ -17,7 +17,7 @@ def write_files(index, data, test_set, train_set, validation_set, output_directo
             t.write(data[p] + "\t" + str(p) + "\n")
     
     
-def split_data(data, sets, validation_factor, output_directory, prefix = ""):
+def split_data(data, sets, validation_factor, output_directory, prefix=""):
     a = np.arange(len(data))
     i = np.random.permutation(len(data))
     print(data)

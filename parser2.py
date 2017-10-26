@@ -75,26 +75,26 @@ class InputParser2:
 	
 		if os.path.exists(self.prot_dir + "/" + self.prot_name + "/" + nw_name + "/" + self.prot_name + ".predicted_ss_one_hot"):
 			self.predicted_ss_one_hot = np.loadtxt(self.prot_dir + "/" + self.prot_name + "/" + nw_name + "/" + self.prot_name + ".predicted_ss_one_hot", delimiter='\t', dtype=float)
-#		else:
-#			f = open(self.prot_dir + "/" + self.prot_name + "/prot_file.tmp", 'w')
-#			f.write(self.prot_name)
-#			f.close()
-#			meta_graph = ""
-#			ckpt = ""
-#			meta_dir = "/home/p/postd/bachelor/double_network/output" + "/" + nw_name + "/save/"
-#			for file in os.listdir(meta_dir):
-#				if file.endswith(".meta"):
-#					meta_graph = os.path.join(meta_dir, file)
-#					ckpt = os.path.join(meta_dir, os.path.splitext(os.path.basename(file))[0])
-#			run_predict1 = "./predict_1.py " + self.prot_dir + "/" + self.prot_name + "/prot_file.tmp" + " " + prot_directory + " " + meta_graph + " " + ckpt + " " + nw_name
-#			
-#			p = subprocess.Popen(run_predict1, stdout=subprocess.PIPE, shell=True, universal_newlines=True)
-#			(output, err) = p.communicate()
-#			print(output)
-#			print(err)
-#			os.remove(self.prot_dir + "/" + self.prot_name + "/prot_file.tmp")
+# 		else:
+# 			f = open(self.prot_dir + "/" + self.prot_name + "/prot_file.tmp", 'w')
+# 			f.write(self.prot_name)
+# 			f.close()
+# 			meta_graph = ""
+# 			ckpt = ""
+# 			meta_dir = "/home/p/postd/bachelor/double_network/output" + "/" + nw_name + "/save/"
+# 			for file in os.listdir(meta_dir):
+# 				if file.endswith(".meta"):
+# 					meta_graph = os.path.join(meta_dir, file)
+# 					ckpt = os.path.join(meta_dir, os.path.splitext(os.path.basename(file))[0])
+# 			run_predict1 = "./predict_1.py " + self.prot_dir + "/" + self.prot_name + "/prot_file.tmp" + " " + prot_directory + " " + meta_graph + " " + ckpt + " " + nw_name
+# 			
+# 			p = subprocess.Popen(run_predict1, stdout=subprocess.PIPE, shell=True, universal_newlines=True)
+# 			(output, err) = p.communicate()
+# 			print(output)
+# 			print(err)
+# 			os.remove(self.prot_dir + "/" + self.prot_name + "/prot_file.tmp")
 #
-#			self.predicted_ss_one_hot = np.loadtxt(self.prot_dir + "/" + self.prot_name + "/" + nw_name + "/" + self.prot_name + ".predicted_ss_one_hot", delimiter='\t', dtype=float)
+# 			self.predicted_ss_one_hot = np.loadtxt(self.prot_dir + "/" + self.prot_name + "/" + nw_name + "/" + self.prot_name + ".predicted_ss_one_hot", delimiter='\t', dtype=float)
 
 		if len(self.predicted_ss_one_hot) < InputParser2.window_width:
 			print("Error: prot smaller " + str(InputParser2.window_width))

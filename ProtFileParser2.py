@@ -14,10 +14,10 @@ class ProtFileParser2:
 		base_name = output_directory + "/" + base
 		if os.path.exists(base_name + ".test_windows") and os.path.exists(base_name + ".test_one_hots") and os.path.exists(base_name + ".train_windows") and os.path.exists(base_name + ".train_one_hots"):
 			print("reading data...")
-			self.all_windows = np.loadtxt(base_name + ".train_windows", dtype = float)
-			self.all_one_hots = np.loadtxt(base_name + ".train_one_hots", dtype = float)
-			self.test_set = np.loadtxt(base_name + ".test_windows", dtype = float)
-			self.test_set_o = np.loadtxt(base_name + ".test_one_hots", dtype = float)
+			self.all_windows = np.loadtxt(base_name + ".train_windows", dtype=float)
+			self.all_one_hots = np.loadtxt(base_name + ".train_one_hots", dtype=float)
+			self.test_set = np.loadtxt(base_name + ".test_windows", dtype=float)
+			self.test_set_o = np.loadtxt(base_name + ".test_one_hots", dtype=float)
 			print("...finished reading")
 		else:
 			self.main_prot_dir = main_prot_dir

@@ -13,3 +13,5 @@ class Layer():
         self.relu = relu
         self.output_channels = output_channels
         self.window_size = window_size
+        if layer_type == "fully":
+            self.output_channels = 1

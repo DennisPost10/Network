@@ -21,7 +21,7 @@ def iterate(config_file):
     output_directory = configs["output_directory"]
     if not os.path.exists(output_directory):
         os.makedirs(output_directory)
-    ## file where unique names are written to
+    # # file where unique names are written to
     save_file = configs["short_name_file"]
     name = configs["base_name"]
     features = configs["features"]
@@ -55,9 +55,9 @@ def iterate(config_file):
     
 
 def generate_random_short_name(output_directory, save_file, real_name):
-    config_file = NamedTemporaryFile(dir = output_directory, delete = False)
+    config_file = NamedTemporaryFile(dir=output_directory, delete=False)
     short_name = config_file.name
-    with open(save_file, mode = 'a') as save:
+    with open(save_file, mode='a') as save:
         save.write(short_name + "\t" + real_name + "\n")
     os.makedirs(output_directory + "/" + short_name + "/")
     os.rename(config_file, output_directory + "/" + short_name + "/" + "configs.config")

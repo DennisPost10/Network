@@ -43,7 +43,7 @@ class CNN():
             with tf.name_scope('conv_2'):
                 self.W_p = weight_variable([self.window_sizes[1], self.neurons[0], self.neurons[1]], "weight")
                 self.b_p = bias_variable([self.neurons[1]], "bias")
-                self.y_p = tf.nn.relu(conv1d(self.y_, self.W_p, "conv_2"), name = "layer")
+                self.y_p = tf.nn.relu(conv1d(self.y_, self.W_p, "conv_2"), name="layer")
                 print(self.y_p.shape)
 
 #            with tf.name_scope('flat'):
@@ -66,9 +66,9 @@ class CNN():
 
 
 
-            self.prot_lengths = tf.placeholder(tf.int64, [None], name = "prot_lengths")
-            self.y_o = tf.nn.softmax(self.y_o, name = "softmax")
-            self.y_o += tf.constant(1e-15) # avoid zeros as input for log: log(0) = -inf -> null
+            self.prot_lengths = tf.placeholder(tf.int64, [None], name="prot_lengths")
+            self.y_o = tf.nn.softmax(self.y_o, name="softmax")
+            self.y_o += tf.constant(1e-15)  # avoid zeros as input for log: log(0) = -inf -> null
             self.mat = tf.multiply(self.y, tf.log(self.y_o))
             self.batch_s = tf.shape(self.mat)[0]
             self.mat = tf.reshape(self.mat, [self.batch_s, -1])
@@ -77,7 +77,7 @@ class CNN():
             self.mat = tf.multiply(tf.cast(self.mat, tf.float32), self.mask)
             self.mat = tf.reshape(self.mat, [self.batch_s, self.max_prot_length, 3])
             
-            self.loss = tf.reduce_mean(-tf.reduce_sum(self.mat, reduction_indices = [1,2]), name="loss")
+            self.loss = tf.reduce_mean(-tf.reduce_sum(self.mat, reduction_indices=[1, 2]), name="loss")
         
             self.one_d_mask = tf.contrib.crf._lengths_to_masks(self.prot_lengths, self.max_prot_length)
         
@@ -86,21 +86,21 @@ class CNN():
 
             self.correct_prediction = tf.multiply(tf.cast(tf.equal(self.observed, self.predicted), tf.float32), self.one_d_mask, name="correct_prediction")
 #            self.accuracy = tf.reduce_mean(tf.cast(self.correct_prediction, tf.float32), name="accuracy")
-            self.correct = tf.count_nonzero(self.correct_prediction, name = "correct")
+            self.correct = tf.count_nonzero(self.correct_prediction, name="correct")
             
-            self.accuracy = tf.divide(self.correct, tf.reduce_sum(self.prot_lengths), name = "accuracy")
+            self.accuracy = tf.divide(self.correct, tf.reduce_sum(self.prot_lengths), name="accuracy")
 
             self.masked_y = tf.multiply(tf.cast(self.observed, tf.float32), self.one_d_mask)
 
             self.masked_y_o = tf.multiply(tf.cast(self.predicted, tf.float32), self.one_d_mask)
 
-            self.h_count = tf.count_nonzero(tf.equal(self.masked_y, 1), name = "h_count", dtype = tf.int32)
-            self.c_count = tf.count_nonzero(tf.equal(self.masked_y, 2), name = "c_count", dtype = tf.int32)
-            self.e_count = tf.count_nonzero(tf.equal(self.masked_y, 3), name = "e_count", dtype = tf.int32)
+            self.h_count = tf.count_nonzero(tf.equal(self.masked_y, 1), name="h_count", dtype=tf.int32)
+            self.c_count = tf.count_nonzero(tf.equal(self.masked_y, 2), name="c_count", dtype=tf.int32)
+            self.e_count = tf.count_nonzero(tf.equal(self.masked_y, 3), name="e_count", dtype=tf.int32)
             
-            self.h_accuracy = tf.divide(tf.shape(tf.sets.set_intersection(tf.transpose(tf.where(tf.equal(self.masked_y, 1))), (tf.transpose(tf.where(tf.equal(self.masked_y_o, 1))))))[1], self.h_count, name = "h_accuracy")
-            self.c_accuracy = tf.divide(tf.shape(tf.sets.set_intersection(tf.transpose(tf.where(tf.equal(self.masked_y, 2))), (tf.transpose(tf.where(tf.equal(self.masked_y_o, 2))))))[1], self.c_count, name = "c_accuracy")
-            self.e_accuracy = tf.divide(tf.shape(tf.sets.set_intersection(tf.transpose(tf.where(tf.equal(self.masked_y, 3))), (tf.transpose(tf.where(tf.equal(self.masked_y_o, 3))))))[1], self.e_count, name = "e_accuracy")
+            self.h_accuracy = tf.divide(tf.shape(tf.sets.set_intersection(tf.transpose(tf.where(tf.equal(self.masked_y, 1))), (tf.transpose(tf.where(tf.equal(self.masked_y_o, 1))))))[1], self.h_count, name="h_accuracy")
+            self.c_accuracy = tf.divide(tf.shape(tf.sets.set_intersection(tf.transpose(tf.where(tf.equal(self.masked_y, 2))), (tf.transpose(tf.where(tf.equal(self.masked_y_o, 2))))))[1], self.c_count, name="c_accuracy")
+            self.e_accuracy = tf.divide(tf.shape(tf.sets.set_intersection(tf.transpose(tf.where(tf.equal(self.masked_y, 3))), (tf.transpose(tf.where(tf.equal(self.masked_y_o, 3))))))[1], self.e_count, name="e_accuracy")
             self.global_step = tf.Variable(0, name='global_step', trainable=False)
             
 #            self.train_step = tf.train.MomentumOptimizer(learning_rate=self.learning_rate, momentum=self.momentum_val, name="train_step").minimize(self.loss, global_step=self.global_step)
@@ -108,7 +108,7 @@ class CNN():
             self.init_op = tf.global_variables_initializer()
             self.saver = tf.train.Saver(max_to_keep=1)
             
-            self.sess = tf.Session(graph = self.g)
+            self.sess = tf.Session(graph=self.g)
             self.sess.run(self.init_op)
         
     def restore_graph(self, checkpoint):
@@ -183,8 +183,8 @@ class CNN():
         with self.g.as_default():
             prediction = tf.argmax(self.y_p, 1)
 
-            hce_counts = np.zeros(3, dtype = float)
-            hce_matches = np.zeros(3, dtype = float)
+            hce_counts = np.zeros(3, dtype=float)
+            hce_matches = np.zeros(3, dtype=float)
 
             number_correct = 0.0
             looked_at = 0.0
