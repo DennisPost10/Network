@@ -34,7 +34,7 @@ class wrapper:
             for j in range(runs):
                 net = mutable_network(next_out + filename)
                 net.train(next_out + "train_run_" + str(j) + ".log")
-                net.predict(i[2], next_out + "train_" + str(j) + ".stats")
+                net.predict(i[4], next_out + "train_" + str(j) + ".stats")
         
     def parse_input_files(self, input_files):
         inputs = np.loadtxt(input_files, delimiter="\t", dtype = str)
