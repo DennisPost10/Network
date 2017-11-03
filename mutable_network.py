@@ -171,9 +171,9 @@ class mutable_network:
 			self.sess = tf.Session(graph=self.g)
 			if not self.load_data:
 				self.init_op = tf.global_variables_initializer()
+				self.sess.run(self.init_op)
 				self.saver.save(self.sess, (self.output_directory + '/save/' + self.name), global_step=self.global_step)
 				self.saver.export_meta_graph(self.output_directory + '/save/' + self.name + "_meta.empty")
-				self.sess.run(self.init_op)
 			else:
 				self.restore_graph(self.meta_file)
 				self.saver.save(self.sess, (self.output_directory + '/save_continued/' + self.name), global_step=self.global_step)
