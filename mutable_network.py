@@ -323,7 +323,7 @@ class mutable_network:
 			sys.stdout = orig_stdout
 			f.close()
 		
-	def __init__(self, config_file):
+	def __init__(self, config_file, run):
 		
 		configs = Configurations(config_file).configs
 		
@@ -386,7 +386,7 @@ class mutable_network:
 			
 		self.start_index = 0
 
-		self.output_directory = self.output_directory + self.name + "/"
+		self.output_directory = self.output_directory + "run_" + str(run) + "/"
 		if not os.path.exists(self.output_directory):
 			os.makedirs(self.output_directory)
 			if not os.path.exists(self.output_directory + "save"):

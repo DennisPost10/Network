@@ -32,9 +32,9 @@ class wrapper:
                     conf.write(keys[j] + "\t" + i[j] + "\tstr\n")
             
             for j in range(runs):
-                net = mutable_network(next_out + filename)
-                net.train(next_out + "train_run_" + str(j) + ".log")
-                net.predict(i[4], next_out + "train_" + str(j) + ".stats")
+                net = mutable_network(next_out + filename, j)
+                net.train(next_out + "run_" + str(j) + "/train.log")
+                net.predict(i[4], next_out + "run_" + str(j) + "/train.stats")
         
     def parse_input_files(self, input_files):
         inputs = np.loadtxt(input_files, delimiter="\t", dtype = str)
