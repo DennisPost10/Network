@@ -248,7 +248,7 @@ class mutable_network:
 						better = True
 						best_global_step = self.sess.run(self.global_step)
 						self.saver.save(self.sess, (self.output_directory + 'save/' + self.name), global_step=self.global_step)
- 				#if step % 1000 == 0:
+				#if step % 1000 == 0:
 						print('Step %d: eval_accuracy = %.3f loss = %.3f H: %.3f C: %.3f E: %.3f (%d)' % (step, accuracy_eval, loss_val, h_acc, c_acc, e_acc, batch_count))
 						summary_writer.add_summary(summarystr, step)		
 					if step % 10000 == 0:
@@ -283,7 +283,7 @@ class mutable_network:
 			sys.stdout = orig_stdout
 			f.close()
 					
-	def predict(self, test_file, stats_output_file, ss_output_file, log_file = None):
+	def predict(self, test_file, stats_output_file, ss_output_file = None, log_file = None):
 		prots = Input_Handler(self.prot_set, self.pssm_input_matrix, self.aa_seq_matrix, self.one_hots_matrix, self.index, self.train_file, self.val_file, self.test_file, self.max_prot_length, self.network_type, self.window_size, self.data_normalization_function, self.use_aa_seq_data, self.aa_codes, self.single_aa_seq)
 		dat, ss_dat, lengths, prot_names = prots.get_prot_by_prot(test_file)
 		
