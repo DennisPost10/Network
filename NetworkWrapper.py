@@ -5,9 +5,6 @@ import numpy as np
 import fileinput
 from utils.ConfigFileParser import Configurations
 from mutable_network import mutable_network
-# idee:
-# settings_iterator->data_iterator
-# Gegebenes Netz für alle Daten 10x trainieren
 
 class wrapper:
      

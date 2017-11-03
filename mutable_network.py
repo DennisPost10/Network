@@ -1,7 +1,6 @@
 import os
 import sys
 
-import matplotlib.pyplot as plt
 import numpy as np
 import tensorflow as tf
 from utils.ConfigFileParser import Configurations
@@ -57,8 +56,8 @@ class mutable_network:
 			if next_layer.layer_type == "dropout":
 				hidden_layer = tf.nn.dropout(input_tf_layer, self.keep_prob_val, name="dropout")
 			elif next_layer.layer_type == "fully":
-#				print(input_layer.window_size)
-#				print(next_layer.window_size)
+				#print(input_layer.window_size)
+				#print(next_layer.window_size)
 				input_shape = input_tf_layer.get_shape().as_list()
 				dim = np.prod(input_shape[1:])
 				reshaped_input_layer = tf.reshape(input_tf_layer, [-1, dim])
@@ -133,8 +132,8 @@ class mutable_network:
 			
 			if self.network_type == "conv":
 				
-#				self.y_o = tf.nn.softmax(self.y_o, name="softmax")
-#				self.y_o += tf.constant(1e-15)  # avoid zeros as input for log: log(0) = -inf -> null
+				#self.y_o = tf.nn.softmax(self.y_o, name="softmax")
+				#self.y_o += tf.constant(1e-15)  # avoid zeros as input for log: log(0) = -inf -> null
 				self.mat = tf.multiply(self.y, tf.log(self.last_layer))
 				self.mat_shape = tf.shape(self.mat)
 				self.mat = tf.reshape(self.mat, [self.mat_shape[0], -1])
@@ -232,22 +231,22 @@ class mutable_network:
 			
 			check_range = 100
 			alpha = 0.001
-#			lower_acc = self.winner_acc
+			#lower_acc = self.winner_acc
 			lower_loss = self.winner_loss
 			
 			for step in range(self.start_index, self.start_index + self.steps):
 				if step % check_range == 0:
 					summarystr, loss_val, accuracy_eval, h_acc, c_acc, e_acc = self.sess.run([summary, self.loss, self.accuracy, self.h_accuracy, self.c_accuracy, self.e_accuracy], feed_dict={self.x: self.val_batch, self.y: self.val_batch_o, self.prot_lengths: self.val_batch_l, self.keep_prob: 1})
-#					if(accuracy_eval - lower_acc > alpha or loss_val - lower_loss < alpha):
+					#if(accuracy_eval - lower_acc > alpha or loss_val - lower_loss < alpha):
 					#print('Step %d: eval_accuracy = %.3f loss = %.3f H: %.3f C: %.3f E: %.3f (%d)' % (step, accuracy_eval, loss_val, h_acc, c_acc, e_acc, batch_count))
 					if(loss_val - lower_loss < alpha):
 						self.winner_acc = max(self.winner_acc, accuracy_eval)
 						self.winner_loss = min(self.winner_loss, loss_val)
-#						lower_acc = accuracy_eval
+						#lower_acc = accuracy_eval
 						lower_loss = loss_val
 						better = True
 						self.saver.save(self.sess, (self.output_directory + '/save/' + self.name), global_step=self.global_step)
-# 				if step % 1000 == 0:
+ 				#if step % 1000 == 0:
 						print('Step %d: eval_accuracy = %.3f loss = %.3f H: %.3f C: %.3f E: %.3f (%d)' % (step, accuracy_eval, loss_val, h_acc, c_acc, e_acc, batch_count))
 						summary_writer.add_summary(summarystr, step)		
 					if step % 10000 == 0:
@@ -403,10 +402,10 @@ class mutable_network:
 		self.build_graph()
 		
 def main(argv):
-# 	config_file = argv[0]
-#	config_file = "/home/proj/tmp/postd/config2.file"
-#	config_file = "/home/proj/tmp/postd/conv_config.file"
-#	config_file = "/home/proj/tmp/postd/mixed_config.file"
+	#config_file = argv[0]
+	#config_file = "/home/proj/tmp/postd/config2.file"
+	#config_file = "/home/proj/tmp/postd/conv_config.file"
+	#config_file = "/home/proj/tmp/postd/mixed_config.file"
 	config_file = "D:/Dennis/ba/mixed_config.file"
 	print(config_file)
 	netw = mutable_network(config_file)
