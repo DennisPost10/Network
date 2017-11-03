@@ -17,23 +17,23 @@ def iterate(config_file):
             print("Error: no input")
             sys.exit()
 
-    prot_directory = configs["protein_directory"]
-    output_directory = configs["output_directory"]
+    prot_directory = configs.get("protein_directory")
+    output_directory = configs.get("output_directory")
     if not os.path.exists(output_directory):
         os.makedirs(output_directory)
     # # file where unique names are written to
-    save_file = configs["short_name_file"]
-    name = configs["base_name"]
-    features = configs["features"]
-    ss_features = configs["ss_features"]
-    learning_rates = configs["learning_rates"]
-    batch_sizes = configs["batch_sizes"]
-    steps = configs["max_steps"]
-    keep_prob_vals = configs["keep_probs"]
-    optimizer = configs["optimizer"]
-    window_sizes = configs["window_sizes"]
-    momentum_vals = configs["momentums"]
-    layers = configs["layers"]
+    save_file = configs.get("short_name_file")
+    name = configs.get("base_name")
+    features = configs.get("features")
+    ss_features = configs.get("ss_features")
+    learning_rates = configs.get("learning_rates")
+    batch_sizes = configs.get("batch_sizes")
+    steps = configs.get("max_steps")
+    keep_prob_vals = configs.get("keep_probs")
+    optimizer = configs.get("optimizer")
+    window_sizes = configs.get("window_sizes")
+    momentum_vals = configs.get("momentums")
+    layers = configs.get("layers")
     
     for window_size in window_sizes:
         net_name = name + "_" + str(window_size) + "_"

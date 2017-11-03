@@ -37,7 +37,7 @@ class Input_Handler:
                 if self.load_aa_seq:
                     for j in range(len(data[i])):
                         full_data[i][j][features + aa_seq_data[i][j]] = 1
-            print(data.shape)
+            #print(data.shape)
         
         else:
             self.h_w = int(window_size / 2)
@@ -68,69 +68,48 @@ class Input_Handler:
     
     def load_data(self):
         
-        self.dat = self.read_npy_file(self.input_directory + "/" + self.file_base + ".matrix.npy")
+        self.dat = self.read_npy_file(self.pssm_input_matrix)
         self.dat = self.normalize_data(self.dat, self.data_normalization_function)
-        print(self.dat.shape)
-        self.ss_dat = self.read_npy_file(self.input_directory + "/" + self.file_base + ".one_hots.npy")
+        #print(self.dat.shape)
+        self.ss_dat = self.read_npy_file(self.one_hots_matrix)
 
         self.features = self.dat[0].shape[1]
-        print(self.features)
+        #print(self.features)
         self.ss_features = self.ss_dat[0].shape[1]
-        print(self.ss_features)
+        #print(self.ss_features)
 
         self.aa_seq = None
         if self.load_aa_seq:
-            self.aa_seq = self.read_npy_file(self.input_directory + "/" + self.file_base + ".aa_seq_codes.npy")
+            self.aa_seq = self.read_npy_file(self.aa_seq_matrix)
+    
+    def load_single_file(self, single_file):
 
-        self.train = np.loadtxt(self.ttv_file + "train" + str(self.index) + ".lst", delimiter="\t", usecols=1, dtype=int)
-        self.val = np.loadtxt(self.ttv_file + "validation" + str(self.index) + ".lst", delimiter="\t", usecols=1, dtype=int)
-        self.test = np.loadtxt(self.ttv_file + "test" + str(self.index) + ".lst", delimiter="\t", usecols=1, dtype=int)
-
-        self.train_lengths, train_too_big = self.get_lengths(self.dat, self.train, self.max_prot_length)
-        self.val_lengths, val_too_big = self.get_lengths(self.dat, self.val, self.max_prot_length)
-        self.test_lengths, test_too_big = self.get_lengths(self.dat, self.test, self.max_prot_length)       
-
-        self.train = np.delete(self.train, train_too_big, 0)
-        self.val = np.delete(self.val, val_too_big, 0)
-        self.test = np.delete(self.test, test_too_big, 0)
-
-        self.train_dat, self.ss_train_dat = self.reformat_data(self.dat, self.ss_dat, self.aa_seq, self.train, self.features, self.ss_features, self.max_prot_length, self.window_size)
-        self.val_dat, self.ss_val_dat = self.reformat_data(self.dat, self.ss_dat, self.aa_seq, self.val, self.features, self.ss_features, self.max_prot_length, self.window_size)
-        self.test_dat, self.ss_test_dat = self.reformat_data(self.dat, self.ss_dat, self.aa_seq, self.test, self.features, self.ss_features, self.max_prot_length, self.window_size)
+        single_dat = np.loadtxt(single_file, delimiter="\t", usecols=1, dtype=int)
+        single_prot_names = np.loadtxt(single_file, delimiter="\t", usecols=0, dtype=str)
+        single_lengths, single_too_big = self.get_lengths(self.dat, single_dat, self.max_prot_length)
+        single_dat = np.delete(single_dat, single_too_big, 0)
+        
+        single_dat, ss_single_dat = self.reformat_data(self.dat, self.ss_dat, self.aa_seq, single_dat, self.features, self.ss_features, self.max_prot_length, self.window_size)
+    
+        return single_dat, ss_single_dat, single_lengths, single_prot_names
+    
+    
+    def load_ttv(self):
+        self.train_dat, self.ss_train_dat, self.train_lengths, self.train_names = self.load_single_file(self.train_file)
+        self.val_dat, self.ss_val_dat, self.val_lengths, self.val_names = self.load_single_file(self.val_file)
+        self.test_dat, self.ss_test_dat, self.test_lengths, self.test_names = self.load_single_file(self.test_file)
 
         self.val_dat, self.ss_val_dat = self.parse_batch(self.val_dat, self.ss_val_dat, self.val_lengths)
         self.test_dat, self.ss_test_dat = self.parse_batch(self.test_dat, self.ss_test_dat, self.test_lengths)
-
+    
         self.prot_index = 0
         self.random_prot_rank = np.random.permutation(len(self.train_dat))
         self.index = 0
     
-    def load_single_file(self, single_file):
-        self.dat = self.read_npy_file(self.input_directory + "/" + self.file_base + ".matrix.npy")
-        self.dat = self.normalize_data(self.dat, self.data_normalization_function)
-        self.ss_dat = self.read_npy_file(self.input_directory + "/" + self.file_base + ".one_hots.npy")
-        
-        self.features = self.dat[0].shape[1]
-        print(self.features)
-        self.ss_features = self.ss_dat[0].shape[1]
-        print(self.ss_features)
-
-        self.aa_seq = None
-        if self.load_aa_seq:
-            self.aa_seq = self.read_npy_file(self.input_directory + "/" + self.file_base + ".aa_seq_codes.npy")
-
-        self.single_dat = np.loadtxt(self.ttv_file + single_file + str(self.index) + ".lst", delimiter="\t", usecols=1, dtype=int)
-        self.single_lengths, single_too_big = self.get_lengths(self.dat, self.single_dat, self.max_prot_length)
-        self.single_dat = np.delete(self.single_dat, single_too_big, 0)
-        
-        self.single_dat, self.ss_single_dat = self.reformat_data(self.dat, self.ss_dat, self.aa_seq, self.single_dat, self.features, self.ss_features, self.max_prot_length, self.window_size)
-    
-        self.single_dat, self.ss_single_dat = self.parse_batch(self.single_dat, self.ss_single_dat, self.single_lengths)
-    
-        return self.single_dat, self.ss_single_dat, self.single_lengths
+        self.ttv_loaded = True
     
     def parse_batch(self, dat, ss_dat, lengths):
-        if self.network_type == "cnn":
+        if self.network_type == "conv":
             return dat, ss_dat
         
         parsed_dat = []
@@ -159,12 +138,18 @@ class Input_Handler:
         return np.array(parsed_dat), np.array(parsed_ss_dat)        
     
     def val_batches(self):
+        if not self.ttv_loaded:
+            self.load_ttv()
         return self.val_dat, self.ss_val_dat, self.val_lengths
     
     def test_batches(self):
+        if not self.ttv_loaded:
+            self.load_ttv()
         return self.test_dat, self.ss_test_dat, self.test_lengths
             
     def next_prots(self, size):
+        if not self.ttv_loaded:
+            self.load_ttv()
         if self.network_type == "conv":
             return self.next_prots_cnn(size)
         elif self.network_type == "mixed":
@@ -245,11 +230,27 @@ class Input_Handler:
   
         return ret_windows, ret_ss, []
     
-    def __init__(self, input_directory, data_file_base_name, ttv_file, index, max_prot_length, network_type, window_size, data_normalization_function, load_aa_seq=False, aa_codes=23, single_aa_seq=False):
-        self.input_directory = input_directory  # dir where input npys are
-        self.file_base = data_file_base_name  # "psi_prots"|"cull_pdb" -> .matrix.npy and .one_hots.npy will be appended
-        self.ttv_file = ttv_file  # ttv_file of ttvs: "ttv_dir + psi_" + validation --> ttv_file = "psi_"
+    def get_prot_by_prot(self, test_file):
+        dat, ss_dat, lengths, prot_names = self.load_single_file(test_file)
+        ret_dat = []
+        ret_ss_dat = []
+        #parse each prot to one batch and append it to array of prot_batches
+        for i in range(len(dat)):
+            prot_dat, prot_ss_dat = self.parse_batch([dat[i]], [ss_dat[i]], [lengths[i]])
+            ret_dat.append(prot_dat)
+            ret_ss_dat.append(prot_ss_dat)
+        return np.array(ret_dat), np.array(ret_ss_dat), lengths, prot_names
+        
+    
+    def __init__(self, prot_set, pssm_matrix, aa_seqs_matrix, one_hots_matrix, index, train, val, test, max_prot_length, network_type, window_size, data_normalization_function, load_aa_seq=False, aa_codes=23, single_aa_seq=False):
+        self.prot_set = prot_set
+        self.pssm_input_matrix = pssm_matrix
+        self.aa_seq_matrix = aa_seqs_matrix
+        self.one_hots_matrix = one_hots_matrix
         self.index = index  # index of ttv_file: e.g. 2 for train2, test2, validation2 etc.
+        self.train_file = train
+        self.val_file = val
+        self.test_file = test
         self.max_prot_length = max_prot_length
         self.network_type = network_type
         self.window_size = window_size
@@ -260,6 +261,7 @@ class Input_Handler:
         if not self.load_aa_seq:
             self.single_aa_seq = False
         self.load_data()
+        self.ttv_loaded = False
     
 def main(argv):
     # netw = Input_Handler("D:/Dennis/Uni/bachelor/data/prot_data/cull_prot_name_files/dat_files/", "cull_pdb_prots", "D:/Dennis/Uni/bachelor/data/prot_data/cull_prot_name_files/dat_files/", 1, 700, "conv", -1, "nothing")
