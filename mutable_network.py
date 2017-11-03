@@ -172,12 +172,12 @@ class mutable_network:
 			if not self.load_data:
 				self.init_op = tf.global_variables_initializer()
 				self.sess.run(self.init_op)
-				self.saver.save(self.sess, (self.output_directory + '/save/' + self.name), global_step=self.global_step)
-				self.saver.export_meta_graph(self.output_directory + '/save/' + self.name + "_meta.empty")
+				self.saver.save(self.sess, (self.output_directory + 'save/' + self.name), global_step=self.global_step)
+				self.saver.export_meta_graph(self.output_directory + 'save/' + self.name + "_meta.empty")
 			else:
 				self.restore_graph(self.meta_file)
-				self.saver.save(self.sess, (self.output_directory + '/save_continued/' + self.name), global_step=self.global_step)
-			tf.summary.FileWriter(self.output_directory + '/summary/' + self.name).add_graph(self.g)
+				self.saver.save(self.sess, (self.output_directory + 'save_continued/' + self.name), global_step=self.global_step)
+			tf.summary.FileWriter(self.output_directory + 'summary/' + self.name).add_graph(self.g)
 			# python ~/.local/lib/python3.6/site-packages/tensorboard/main.py --logdir="/home/proj/tmp/postd/test/test_mixed/summary/"
 			# C:\Program Files\Python36\Lib\site-packages\tensorboard\main.py  --logdir="D:\Dennis\ba\\summary\"
 	def restore_graph(self, checkpoint):
@@ -191,9 +191,9 @@ class mutable_network:
 	
 	def restore_graph_without_knowing_checkpoint(self):
 		self.ckpt = None
-		for file in os.listdir(self.output_directory + "/save/"):
+		for file in os.listdir(self.output_directory + "save/"):
 			if file.endswith(".meta"):
-				self.ckpt = self.output_directory + "/save/" + os.path.splitext(file)[0]
+				self.ckpt = self.output_directory + "save/" + os.path.splitext(file)[0]
 		if(self.ckpt == None):
 			print("Error: missing ckpt")
 			sys.exit()
@@ -224,7 +224,7 @@ class mutable_network:
 			tf.summary.scalar('e_accuracy', self.e_accuracy)
 			summary = tf.summary.merge_all()
 		
-			summary_writer = tf.summary.FileWriter(self.output_directory + '/summary', self.g)
+			summary_writer = tf.summary.FileWriter(self.output_directory + 'summary', self.g)
 		
 			batch_count = 0
 			better = False
@@ -245,7 +245,7 @@ class mutable_network:
 						#lower_acc = accuracy_eval
 						lower_loss = loss_val
 						better = True
-						self.saver.save(self.sess, (self.output_directory + '/save/' + self.name), global_step=self.global_step)
+						self.saver.save(self.sess, (self.output_directory + 'save/' + self.name), global_step=self.global_step)
  				#if step % 1000 == 0:
 						print('Step %d: eval_accuracy = %.3f loss = %.3f H: %.3f C: %.3f E: %.3f (%d)' % (step, accuracy_eval, loss_val, h_acc, c_acc, e_acc, batch_count))
 						summary_writer.add_summary(summarystr, step)		
@@ -254,7 +254,7 @@ class mutable_network:
 							better = False
 						else:
 							print("finished early")
-							self.restore_graph(self.output_directory + '/save/' + self.name)
+							self.restore_graph(self.output_directory + 'save/' + self.name)
 							print("restored graph from step " + str(self.sess.run(self.global_step)))
 							print("testing...")
 							test_batch, test_batch_o, test_batch_l = self.prot_it.val_batches()
@@ -266,7 +266,7 @@ class mutable_network:
 				_ = self.sess.run(self.train_step, feed_dict={self.x: ret_prots, self.y: ret_prots_o, self.keep_prob: self.keep_prob_val, self.prot_lengths: ret_lengths})
 				batch_count += 1
 		
-			self.saver.save(self.sess, (self.output_directory + '/save/' + self.name), global_step=self.global_step)
+			self.saver.save(self.sess, (self.output_directory + 'save/' + self.name), global_step=self.global_step)
 			summary_writer.add_summary(summarystr, self.start_index + self.steps)
 			summarystr, loss_val, accuracy_eval, h_acc, c_acc, e_acc = self.sess.run([summary, self.loss, self.accuracy, self.h_accuracy, self.c_accuracy, self.e_accuracy], feed_dict={self.x: self.val_batch, self.y: self.val_batch_o, self.prot_lengths: self.val_batch_l, self.keep_prob: 1})
 			print("training finished: reached maximum steps")
@@ -384,7 +384,7 @@ class mutable_network:
 			
 		self.start_index = 0
 
-		self.output_directory = self.output_directory + "/" + self.name + "/"
+		self.output_directory = self.output_directory + self.name + "/"
 		if not os.path.exists(self.output_directory):
 			os.makedirs(self.output_directory)
 			if not os.path.exists(self.output_directory + "save"):
