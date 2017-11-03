@@ -10,9 +10,7 @@ from mutable_network import mutable_network
 # Gegebenes Netz für alle Daten 10x trainieren
 
 class wrapper:
-    
-    
-    
+     
     def __init__(self, config_file):
         configs = Configurations(config_file).configs
         filename = os.path.basename(config_file)
@@ -44,3 +42,9 @@ class wrapper:
     def parse_input_files(self, input_files):
         inputs = np.loadtxt(input_files, delimiter="\t", dtype = str)
         return inputs[0], inputs[1:]
+    
+def main(argv):
+    wrapper("/home/proj/tmp/postd/normal_config.file")
+        
+if __name__ == "__main__":
+    main(sys.argv[1:])
