@@ -233,6 +233,7 @@ class mutable_network:
 			alpha = 0.001
 			#lower_acc = self.winner_acc
 			lower_loss = self.winner_loss
+			best_global_step = self.start_index
 			
 			for step in range(self.start_index, self.start_index + self.steps):
 				if step % check_range == 0:
@@ -245,6 +246,7 @@ class mutable_network:
 						#lower_acc = accuracy_eval
 						lower_loss = loss_val
 						better = True
+						best_global_step = self.sess.run(self.global_step)
 						self.saver.save(self.sess, (self.output_directory + 'save/' + self.name), global_step=self.global_step)
  				#if step % 1000 == 0:
 						print('Step %d: eval_accuracy = %.3f loss = %.3f H: %.3f C: %.3f E: %.3f (%d)' % (step, accuracy_eval, loss_val, h_acc, c_acc, e_acc, batch_count))
@@ -254,8 +256,8 @@ class mutable_network:
 							better = False
 						else:
 							print("finished early")
-							self.restore_graph(self.output_directory + 'save/' + self.name)
-							print("restored graph from step " + str(self.sess.run(self.global_step)))
+							self.restore_graph(self.output_directory + 'save/' + self.name + "-" + str(best_global_step))
+							print("restored graph from step " + str(self.sess.run(self.global_step)) + ": best_global=" + str(best_global_step))
 							print("testing...")
 							test_batch, test_batch_o, test_batch_l = self.prot_it.val_batches()
 							accuracy_test, h_acc, c_acc, e_acc = self.sess.run([self.accuracy, self.h_accuracy, self.c_accuracy, self.e_accuracy], feed_dict={self.x: test_batch, self.y: test_batch_o, self.prot_lengths: test_batch_l, self.keep_prob: 1})
