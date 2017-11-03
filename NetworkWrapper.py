@@ -44,7 +44,7 @@ class wrapper:
         return inputs[0], inputs[1:]
     
 def main(argv):
-    wrapper("/home/proj/tmp/postd/normal_config.file")
+    wrapper(argv[0])
         
 if __name__ == "__main__":
     main(sys.argv[1:])
