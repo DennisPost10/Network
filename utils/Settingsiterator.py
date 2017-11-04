@@ -10,8 +10,8 @@ import shutil
 import sys
 from tempfile import NamedTemporaryFile
 
-from NetworkWrapper import wrapper
 from utils.ConfigFileParser import Configurations
+from NetworkWrapper import wrapper
 
 
 def iterate_2(config_file):
