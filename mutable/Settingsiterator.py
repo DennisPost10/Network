@@ -3,7 +3,7 @@ import os
 import shutil
 import sys
 from tempfile import NamedTemporaryFile
-from .NetworkWrapper import iter_wrapper
+from mutable.NetworkWrapper import iter_wrapper
 from utils.ConfigFileParser import Configurations
 
 def iterate_2(config_file):

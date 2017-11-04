@@ -4,7 +4,7 @@ import shutil
 import sys
 import numpy as np
 from utils.ConfigFileParser import Configurations
-from .mutable_network import mutable_network
+from mutable.mutable_network import mutable_network
 
 class iter_wrapper:
      
