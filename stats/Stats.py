@@ -6,7 +6,7 @@ import sys
 import matplotlib
 
 
-#from plotting.stat_matrix_reader_pandas import stats_plotter
+# from plotting.stat_matrix_reader_pandas import stats_plotter
 def read_structures(prot_directory, prot, observed_in_subdir, predicted_dir, predicted_in_subdir):
     
     observed_ss_file = prot_directory + "/" + prot
@@ -39,7 +39,7 @@ def read_structures(prot_directory, prot, observed_in_subdir, predicted_dir, pre
                 aa_sequence += line.strip()
                 line = fasta.readline()
             
-        unknown =[]
+        unknown = []
         for i in range(len(aa_sequence)):
             if aa_sequence[i] == '-':
                 unknown.append(i - len(unknown))
@@ -115,7 +115,7 @@ def q3(ss_obs, ss_pred, length):
         e_score = -1
         
 #    avg = (h_score + c_score + e_score)/i
-    avg = (max(h_score, 0) + max(c_score, 0) + max(e_score, 0))/i
+    avg = (max(h_score, 0) + max(c_score, 0) + max(e_score, 0)) / i
 
     return correct, correct_counts, counts_observed, counts_predicted, mean, h_score, c_score, e_score, avg
 
@@ -203,7 +203,7 @@ def sov(obs, pred, length):
 def sov_val(size_obs, size_pred, overlap):
     maxOV = (size_obs + size_pred - overlap)
     ret = overlap + sov_delta(size_obs, size_pred, overlap, maxOV) * 1.0
-    return ret/maxOV
+    return ret / maxOV
     
 def sov_delta(size_obs, size_pred, overlap, maxOV):
     ret = min(maxOV - overlap, overlap)

@@ -3,8 +3,10 @@ import os
 import shutil
 import sys
 from tempfile import NamedTemporaryFile
+
 from mutable.NetworkWrapper import iter_wrapper
 from utils.ConfigFileParser import Configurations
+
 
 def iterate_2(config_file):
     configs = Configurations(config_file).configs
@@ -75,7 +77,7 @@ def iterate(config_file):
                 
                 os.makedirs(out)
                 shutil.copy(config_file, out)
-                for line in fileinput.input([out + filename], inplace = True):
+                for line in fileinput.input([out + filename], inplace=True):
                     if line.strip().startswith("output_directory"):
                         line = "output_directory\t" + out + "\tstr\n"
                     sys.stdout.write(line)

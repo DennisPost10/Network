@@ -38,7 +38,7 @@ class Input_Handler:
                 if self.load_aa_seq:
                     for j in range(len(data[i])):
                         full_data[i][j][features + aa_seq_data[i][j]] = 1
-            #print(data.shape)
+            # print(data.shape)
         
         else:
             self.h_w = int(window_size / 2)
@@ -71,13 +71,13 @@ class Input_Handler:
         
         self.dat = self.read_npy_file(self.pssm_input_matrix)
         self.dat = self.normalize_data(self.dat, self.data_normalization_function)
-        #print(self.dat.shape)
+        # print(self.dat.shape)
         self.ss_dat = self.read_npy_file(self.one_hots_matrix)
 
         self.features = self.dat[0].shape[1]
-        #print(self.features)
+        # print(self.features)
         self.ss_features = self.ss_dat[0].shape[1]
-        #print(self.ss_features)
+        # print(self.ss_features)
 
         self.aa_seq = None
         if self.load_aa_seq:
@@ -235,7 +235,7 @@ class Input_Handler:
         dat, ss_dat, lengths, prot_names = self.load_single_file(test_file)
         ret_dat = []
         ret_ss_dat = []
-        #parse each prot to one batch and append it to array of prot_batches
+        # parse each prot to one batch and append it to array of prot_batches
         for i in range(len(dat)):
             prot_dat, prot_ss_dat = self.parse_batch([dat[i]], [ss_dat[i]], [lengths[i]])
             ret_dat.append(prot_dat)

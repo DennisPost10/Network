@@ -14,7 +14,7 @@ class Configurations:
             layers = list()
             for line in config:
                 if line.strip():
-                    #print(line.strip())
+                    # print(line.strip())
                     if not line.startswith("#"):
                         key, val, typ = line.strip().split("\t")
                         if typ == "int":

@@ -2,9 +2,11 @@ import fileinput
 import os 
 import shutil
 import sys
+
+from mutable.mutable_network import mutable_network
 import numpy as np
 from utils.ConfigFileParser import Configurations
-from mutable.mutable_network import mutable_network
+
 
 class iter_wrapper:
      
@@ -21,7 +23,7 @@ class iter_wrapper:
             os.makedirs(next_out)
             shutil.copy(config_file, next_out)
             
-            for line in fileinput.input([next_out + filename], inplace = True):
+            for line in fileinput.input([next_out + filename], inplace=True):
                 if line.strip().startswith("output_directory"):
                     line = "output_directory\t" + next_out + "\tstr\n"
                 sys.stdout.write(line)
@@ -37,7 +39,7 @@ class iter_wrapper:
                 net.predict(i[4], next_out + "run_" + str(j) + "/train.stats")
         
     def parse_input_files(self, input_files):
-        inputs = np.loadtxt(input_files, delimiter="\t", dtype = str)
+        inputs = np.loadtxt(input_files, delimiter="\t", dtype=str)
         return inputs[0], inputs[1:]
     
 def main(argv):
