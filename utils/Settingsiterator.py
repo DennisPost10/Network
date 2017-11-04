@@ -4,14 +4,14 @@
 # window size
 # number of layers
 # batch size
+import fileinput
 import os
+import shutil
 import sys
 from tempfile import NamedTemporaryFile
-import shutil
-import fileinput
 
-from utils.ConfigFileParser import Configurations
 from NetworkWrapper import wrapper
+from utils.ConfigFileParser import Configurations
 
 
 def iterate_2(config_file):
