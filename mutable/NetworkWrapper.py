@@ -3,7 +3,7 @@ import os
 import shutil
 import sys
 
-from mutable_network import mutable_network
+from mutable.mutable_network import mutable_network
 import numpy as np
 from utils.ConfigFileParser import Configurations
 
