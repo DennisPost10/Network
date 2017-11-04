@@ -1,10 +1,12 @@
-import os 
-import sys
-import shutil
-import numpy as np
 import fileinput
-from utils.ConfigFileParser import Configurations
+import os 
+import shutil
+import sys
+
 from mutable_network import mutable_network
+import numpy as np
+from utils.ConfigFileParser import Configurations
+
 
 class wrapper:
      

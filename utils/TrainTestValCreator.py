@@ -2,6 +2,7 @@ import sys
 
 import numpy as np
 
+
 def read_prot_file(file):
     return np.loadtxt(file, dtype=str, delimiter="\n")
 

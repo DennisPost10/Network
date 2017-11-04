@@ -1,13 +1,14 @@
 import os
 import sys
 
+from numpy import Infinity
+
 from ProtFileParser1 import ProtFileParser
 import matplotlib.pyplot as plt
 import numpy as np
 from parser1 import InputParser
 import tensorflow as tf
 from utils.ConfigFileParser import Configurations
-from numpy import Infinity
 
 
 sss = ['H', 'C', 'E']

@@ -3,6 +3,7 @@ import sys
 
 import numpy as np
 
+
 def read_prot_file(prot_file, file_directory, output_directory, validation_factor):
     prots = []
     with open(prot_file) as prot_f:

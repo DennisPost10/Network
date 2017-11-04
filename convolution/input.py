@@ -5,6 +5,7 @@ from sklearn.utils import shuffle
 
 import numpy as np
 
+
 class CNN_Inputparser:
     
     def read_data(self, prot_name_file):

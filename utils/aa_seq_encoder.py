@@ -1,5 +1,7 @@
 import sys
+
 import numpy as np
+
 
 def parse_aa_seq(aa_seq, aa_indices):
     aa_ind = np.empty([len(aa_seq)], dtype=int)

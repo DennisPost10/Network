@@ -1,5 +1,7 @@
-import numpy as np
 import sys
+
+import numpy as np
+
 
 def write_prot_mat(prot_file, ss_directory, tab_directory, output_file):
     prots = []

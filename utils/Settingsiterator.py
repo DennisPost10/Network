@@ -1,21 +1,15 @@
-# iterate through
-# optimizer
-# learning rates
-# window size
-# number of layers
-# batch size
 import fileinput
 import os
 import shutil
 import sys
 from tempfile import NamedTemporaryFile
 
-from utils.ConfigFileParser import Configurations
 from NetworkWrapper import wrapper
+from utils.ConfigFileParser import Configurations
 
 
 def iterate_2(config_file):
-    configs = Configurations(config_file)
+    configs = Configurations(config_file).configs
     if(configs == None):
             print("Error: no input")
             sys.exit()
@@ -53,7 +47,7 @@ def iterate_2(config_file):
                             print("")
    
 def iterate(config_file):
-    configs = Configurations(config_file)
+    configs = Configurations(config_file).configs
     if(configs == None):
             print("Error: no input")
             sys.exit()

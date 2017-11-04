@@ -4,6 +4,7 @@ import sys
 
 import numpy as np
 
+
 class Input_Handler:
     
     def read_npy_file(self, npy_file):
