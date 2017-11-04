@@ -2,9 +2,8 @@ import fileinput
 import os 
 import shutil
 import sys
-
-from .mutable_network import mutable_network
 import numpy as np
+from .Mutable_network import mutable_network
 from utils.ConfigFileParser import Configurations
 
 

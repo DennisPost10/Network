@@ -1,0 +1,14 @@
+from os import path
+import sys
+sys.path.append(path.abspath("D:/Dennis/Uni/bachelor/jav/Network/"))
+from mutable_network import mutable_network as net
+a=net("D:/Dennis/ba/mixed_config.file")
+a.predict("D:/Dennis/ba/prot_data/psi_prot_name_files/dat_files/test1.lst", "C:/Users/Dennis/Desktop/stat.test", "C:/Users/Dennis/Desktop/ss.test")
+
+from os import path
+import sys
+sys.path.append(path.abspath("D:/Dennis/Uni/bachelor/jav/Network/"))
+from NetworkWrapper import wrapper
+wrapper("C:/Users/Dennis/Desktop/bla.txt")
+
+sys.path.append(path.abspath("/home/p/postd/bachelor/workspace/Network/"))
