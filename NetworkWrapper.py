@@ -8,7 +8,7 @@ import numpy as np
 from utils.ConfigFileParser import Configurations
 
 
-class wrapper:
+class iter_wrapper:
      
     def __init__(self, config_file):
         configs = Configurations(config_file).configs
@@ -43,7 +43,7 @@ class wrapper:
         return inputs[0], inputs[1:]
     
 def main(argv):
-    wrapper(argv[0])
+    iter_wrapper(argv[0])
         
 if __name__ == "__main__":
     main(sys.argv[1:])

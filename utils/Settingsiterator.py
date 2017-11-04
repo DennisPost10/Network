@@ -3,8 +3,7 @@ import os
 import shutil
 import sys
 from tempfile import NamedTemporaryFile
-
-from NetworkWrapper import wrapper
+from NetworkWrapper import iter_wrapper
 from utils.ConfigFileParser import Configurations
 
 
@@ -90,7 +89,7 @@ def iterate(config_file):
                         conf.write("#layer\tlayer_" + str(k) + "\tfully\tFalse\t1\t" + str(layer_size) + "\n")
                     conf.write("#layer\tlayer_out\tfully\tFalse\t1\t" + str(ss_features) + "\n")
                         
-                wrapper(out + filename)
+                iter_wrapper(out + filename)
 
 def generate_random_short_name(output_directory, save_file, real_name):
     config_file = NamedTemporaryFile(dir=output_directory, delete=False)
