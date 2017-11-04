@@ -2,11 +2,9 @@ import fileinput
 import os 
 import shutil
 import sys
-
-from mutable.mutable_network import mutable_network
 import numpy as np
 from utils.ConfigFileParser import Configurations
-
+from .mutable_network import mutable_network
 
 class iter_wrapper:
      
