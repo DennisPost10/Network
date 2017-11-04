@@ -4,7 +4,7 @@ import shutil
 import sys
 from tempfile import NamedTemporaryFile
 
-from mutable.NetworkWrapper import iter_wrapper
+from .NetworkWrapper import iter_wrapper
 from utils.ConfigFileParser import Configurations
 
 
