@@ -3,8 +3,8 @@ import os
 import shutil
 import sys
 import numpy as np
-from utils.ConfigFileParser import Configurations
 from mutable.Mutable_network import mutable_network
+from utils.ConfigFileParser import Configurations
 
 
 class iter_wrapper:

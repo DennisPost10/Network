@@ -4,9 +4,9 @@ import sys
 import numpy as np
 from stats import Stats
 import tensorflow as tf
-from utils.ConfigFileParser import Configurations
 from utils.InputHandler import Input_Handler
 from utils.Layer import Layer
+from utils.ConfigFileParser import Configurations
 
 
 sss = ['H', 'C', 'E']
