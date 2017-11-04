@@ -274,6 +274,9 @@ class mutable_network:
 			print("training finished: reached maximum steps")
 			print('Step %d: eval_accuracy = %.3f loss = %.3f H: %.3f C: %.3f E: %.3f (%d)' % (step, accuracy_eval, loss_val, h_acc, c_acc, e_acc, batch_count))
 			
+			self.restore_graph(self.output_directory + 'save/' + self.name + "-" + str(best_global_step))
+			print("restored graph from step " + str(self.sess.run(self.global_step)) + ": best_global=" + str(best_global_step))
+			
 			print("testing...")
 			test_batch, test_batch_o, test_batch_l = self.prot_it.val_batches()
 			accuracy_test, h_acc, c_acc, e_acc = self.sess.run([self.accuracy, self.h_accuracy, self.c_accuracy, self.e_accuracy], feed_dict={self.x: test_batch, self.y: test_batch_o, self.prot_lengths: test_batch_l, self.keep_prob: 1})
