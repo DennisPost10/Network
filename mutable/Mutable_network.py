@@ -260,7 +260,7 @@ class mutable_network:
 							self.restore_graph(self.output_directory + 'save/' + self.name + "-" + str(best_global_step))
 							print("restored graph from step " + str(self.sess.run(self.global_step)) + ": best_global=" + str(best_global_step))
 							print("testing...")
-							test_batch, test_batch_o, test_batch_l = self.prot_it.val_batches()
+							test_batch, test_batch_o, test_batch_l = self.prot_it.test_batches()
 							accuracy_test, h_acc, c_acc, e_acc = self.sess.run([self.accuracy, self.h_accuracy, self.c_accuracy, self.e_accuracy], feed_dict={self.x: test_batch, self.y: test_batch_o, self.prot_lengths: test_batch_l, self.keep_prob: 1})
 							print('test_accuracy = %.3f H: %.3f C: %.3f E: %.3f' % (accuracy_test, h_acc, c_acc, e_acc))
 							if log_file != None:
@@ -282,7 +282,7 @@ class mutable_network:
 			print("restored graph from step " + str(self.sess.run(self.global_step)) + ": best_global=" + str(best_global_step))
 			
 			print("testing...")
-			test_batch, test_batch_o, test_batch_l = self.prot_it.val_batches()
+			test_batch, test_batch_o, test_batch_l = self.prot_it.test_batches()
 			accuracy_test, h_acc, c_acc, e_acc = self.sess.run([self.accuracy, self.h_accuracy, self.c_accuracy, self.e_accuracy], feed_dict={self.x: test_batch, self.y: test_batch_o, self.prot_lengths: test_batch_l, self.keep_prob: 1})
 			print('test_accuracy = %.3f H: %.3f C: %.3f E: %.3f' % (accuracy_test, h_acc, c_acc, e_acc))
 		
