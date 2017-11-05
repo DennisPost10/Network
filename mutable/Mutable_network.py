@@ -241,7 +241,7 @@ class mutable_network:
 					summarystr, loss_val, accuracy_eval, h_acc, c_acc, e_acc = self.sess.run([summary, self.loss, self.accuracy, self.h_accuracy, self.c_accuracy, self.e_accuracy], feed_dict={self.x: self.val_batch, self.y: self.val_batch_o, self.prot_lengths: self.val_batch_l, self.keep_prob: 1})
 					# if(accuracy_eval - lower_acc > alpha or loss_val - lower_loss < alpha):
 					# print('Step %d: eval_accuracy = %.3f loss = %.3f H: %.3f C: %.3f E: %.3f (%d)' % (step, accuracy_eval, loss_val, h_acc, c_acc, e_acc, batch_count))
-					if(loss_val - lower_loss < alpha):
+					if(loss_val - lower_loss < -alpha):
 						self.winner_acc = max(self.winner_acc, accuracy_eval)
 						self.winner_loss = min(self.winner_loss, loss_val)
 						# lower_acc = accuracy_eval
