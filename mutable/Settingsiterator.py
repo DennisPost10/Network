@@ -82,8 +82,8 @@ def iterate(config_file):
 
                 with open(out + filename, 'a') as conf:
                     conf.write("\n")
-                    conf.write("use_aa_seq" + "\t" + use_aa_seq + "\tbool\n")
-                    conf.write("single_aa_seq" + "\t" + single_aa_seq + "\tbool\n")
+                    conf.write("use_aa_seq" + "\t" + str(use_aa_seq) + "\tbool\n")
+                    conf.write("single_aa_seq" + "\t" + str(single_aa_seq) + "\tbool\n")
                     for k in range(j + 1):
                         conf.write("#layer\tlayer_" + str(k) + "\tfully\tFalse\t1\t" + str(layer_size) + "\n")
                     conf.write("#layer\tlayer_out\tfully\tFalse\t1\t" + str(ss_features) + "\n")
