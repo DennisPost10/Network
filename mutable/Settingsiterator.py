@@ -73,22 +73,22 @@ def iterate(config_file):
                         out += str(layer_size) + "_"
                     out += str(a) + "_" + str(b) + "/"
                 
-                os.makedirs(out)
-                shutil.copy(config_file, out)
-                for line in fileinput.input([out + filename], inplace=True):
-                    if line.strip().startswith("output_directory"):
-                        line = "output_directory\t" + out + "\tstr\n"
-                    sys.stdout.write(line)
+                    os.makedirs(out)
+                    shutil.copy(config_file, out)
+                    for line in fileinput.input([out + filename], inplace=True):
+                        if line.strip().startswith("output_directory"):
+                            line = "output_directory\t" + out + "\tstr\n"
+                        sys.stdout.write(line)
 
-                with open(out + filename, 'a') as conf:
-                    conf.write("\n")
-                    conf.write("use_aa_seq" + "\t" + str(use_aa_seq) + "\tbool\n")
-                    conf.write("single_aa_seq" + "\t" + str(single_aa_seq) + "\tbool\n")
-                    for k in range(j + 1):
-                        conf.write("#layer\tlayer_" + str(k) + "\tfully\tFalse\t1\t" + str(layer_size) + "\n")
-                    conf.write("#layer\tlayer_out\tfully\tFalse\t1\t" + str(ss_features) + "\n")
+                    with open(out + filename, 'a') as conf:
+                        conf.write("\n")
+                        conf.write("use_aa_seq" + "\t" + str(use_aa_seq) + "\tbool\n")
+                        conf.write("single_aa_seq" + "\t" + str(single_aa_seq) + "\tbool\n")
+                        for k in range(j + 1):
+                            conf.write("#layer\tlayer_" + str(k) + "\tfully\tFalse\t1\t" + str(layer_size) + "\n")
+                        conf.write("#layer\tlayer_out\tfully\tFalse\t1\t" + str(ss_features) + "\n")
                         
-                iter_wrapper(out + filename)
+                    iter_wrapper(out + filename)
 
 def generate_random_short_name(output_directory, save_file, real_name):
     config_file = NamedTemporaryFile(dir=output_directory, delete=False)
